@@ -10,24 +10,23 @@ import Token from '../cc/Token';
 
 const TOKEN = 'Pension withdrawal tax rules';
 
-const CONCERN_PILLS = [
-  { t: 'Defined benefit vs defined contribution', l: 2, top: 15 },
-  { t: 'EPF withdrawal rules after retirement', l: 27, top: 15 },
-  { t: 'Is this bank letter about my pension genuine', l: 56, top: 15 },
-  { t: 'How annuities work', l: 5, top: 29 },
-  { t: 'Tax on pension withdrawals', l: 24, top: 29 },
-  { t: 'Monthly budget on a fixed income', l: 51, top: 29 },
-  { t: 'Senior citizen savings scheme rates', l: 2, top: 43 },
-  { t: TOKEN, l: 34, top: 43, token: true },
-  { t: 'Questions to ask a financial adviser', l: 62, top: 43 },
+// All thirteen chats in date order, laid out as a wrapping flow so no chip overlaps or truncates at any width. `concern` marks the nine retirement chats that gather into the section.
+const PILLS = [
+  { t: 'Defined benefit vs defined contribution', concern: true },
+  { t: 'EPF withdrawal rules after retirement', concern: true },
+  { t: 'Recipe for masala oats' },
+  { t: 'Is this bank letter about my pension genuine', concern: true },
+  { t: 'How annuities work', concern: true },
+  { t: 'Weekend trip ideas near Lonavala' },
+  { t: 'Tax on pension withdrawals', concern: true },
+  { t: 'Monthly budget on a fixed income', concern: true },
+  { t: 'Draft a birthday message for Ravi' },
+  { t: 'Senior citizen savings scheme rates', concern: true },
+  { t: 'What does deductible mean' },
+  { t: TOKEN, concern: true, token: true },
+  { t: 'Questions to ask a financial adviser', concern: true },
 ];
-
-const NOISE_PILLS = [
-  { t: 'Recipe for masala oats', l: 78, top: 29 },
-  { t: 'Draft a birthday message for Ravi', l: 62, top: 57 },
-  { t: 'Weekend trip ideas near Lonavala', l: 8, top: 57 },
-  { t: 'What does deductible mean', l: 38, top: 57 },
-];
+const CONCERN_COUNT = PILLS.filter((p) => p.concern).length;
 
 const CARD_ROWS = [
   ['Questions to ask a financial adviser', 'Jun 26'],
@@ -54,43 +53,44 @@ export default function HeroGather() {
         ))}
       </div>
 
-      {CONCERN_PILLS.map((p, i) => (
-        <motion.div
-          key={p.t}
-          className={`gather-pill is-concern ${p.token ? 'is-token' : ''}`}
-          initial={false}
-          animate={
-            shown
-              ? { left: '50%', top: '74%', x: '-50%', scale: 0.35, opacity: 0 }
-              : { left: `${p.l}%`, top: `${p.top}%`, x: '0%', scale: 1, opacity: 1 }
+      <div className="gather-flow">
+        {PILLS.map((p) => {
+          if (!p.concern) {
+            return (
+              <motion.div
+                key={p.t}
+                className="gather-pill is-noise"
+                initial={false}
+                animate={{ opacity: shown ? 0.4 : 0.85 }}
+                transition={{ duration: reduced ? 0 : 0.6 }}
+              >
+                {p.t}
+              </motion.div>
+            );
           }
-          transition={{
-            duration: reduced ? 0 : 0.65,
-            delay: reduced ? 0 : (shown ? i : CONCERN_PILLS.length - 1 - i) * 0.045,
-            ease: [0.6, 0.05, 0.2, 1],
-          }}
-        >
-          {p.token ? <Token label={p.t} size="sm" /> : p.t}
-        </motion.div>
-      ))}
-
-      {NOISE_PILLS.map((p) => (
-        <motion.div
-          key={p.t}
-          className="gather-pill is-noise"
-          initial={false}
-          animate={{ opacity: shown ? 0.4 : 0.85 }}
-          transition={{ duration: reduced ? 0 : 0.6 }}
-          style={{ left: `${p.l}%`, top: `${p.top}%` }}
-        >
-          {p.t}
-        </motion.div>
-      ))}
+          const i = PILLS.filter((q) => q.concern).indexOf(p);
+          return (
+            <motion.div
+              key={p.t}
+              className={`gather-pill is-concern ${p.token ? 'is-token' : ''}`}
+              initial={false}
+              animate={shown ? { y: 56, scale: 0.35, opacity: 0 } : { y: 0, scale: 1, opacity: 1 }}
+              transition={{
+                duration: reduced ? 0 : 0.65,
+                delay: reduced ? 0 : (shown ? i : CONCERN_COUNT - 1 - i) * 0.045,
+                ease: [0.6, 0.05, 0.2, 1],
+              }}
+            >
+              {p.token ? <Token label={p.t} size="sm" /> : p.t}
+            </motion.div>
+          );
+        })}
+      </div>
 
       <motion.div
         className="gather-card"
         initial={false}
-        animate={shown ? { opacity: 1, scale: 1, y: 0, x: '-50%' } : { opacity: 0, scale: 0.95, y: 16, x: '-50%' }}
+        animate={shown ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: reduced ? 0 : 0.5, delay: shown && !reduced ? 0.32 : 0, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="gather-card-head">

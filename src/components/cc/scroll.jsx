@@ -17,8 +17,10 @@ export function ScrollScene({ id, height = '260vh', mobileHeight = '150vh', clas
   const ref = useRef(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  // A function transform keeps progress on the main thread: framer hands range transforms of a raw scroll value to a native scroll timeline, which drops the keyframe at progress 1 and fades elements back out after their range.
+  const plain = useTransform(scrollYProgress, (v) => v);
   const finished = useMotionValue(1);
-  const progress = reduced ? finished : scrollYProgress;
+  const progress = reduced ? finished : plain;
   const cls = ['cc-scene', reduced && 'is-static', className].filter(Boolean).join(' ');
 
   return (

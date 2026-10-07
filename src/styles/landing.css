@@ -30,6 +30,8 @@
 @media (min-width: 1200px) {
   .lp-rail { display: block; position: fixed; z-index: 40; left: 16px; top: calc(var(--cc-topbar) + 20px); width: 212px; }
   .lp-main { padding-left: 244px; }
+  /* Each top-level section reaches back under the rail, so its desk pattern, band or footer strip spans the full width while its content stays clear of the rail. */
+  .lp-page .lp-main > * { margin-left: -244px; padding-left: 244px; }
 }
 .lp-rail-body { padding: 8px 10px 10px; max-height: calc(100vh - var(--cc-topbar) - 80px); overflow-y: auto; font-size: 13px; }
 
@@ -47,12 +49,13 @@
 .lp-hero-fig { margin: clamp(40px, 6vw, 64px) auto 0; max-width: 980px; text-align: left; }
 
 /* Figure 1: the gather loop inside "Meera’s chats" */
-.gather { position: relative; height: clamp(340px, 44vw, 420px); margin: 16px; }
-.gather-months { position: absolute; top: 0; left: 0; right: 0; display: flex; color: var(--cc-text-3); }
+.gather { position: relative; min-height: clamp(340px, 44vw, 420px); margin: 16px; display: flex; flex-direction: column; gap: 18px; }
+.gather-months { display: flex; color: var(--cc-text-3); }
+.gather-flow { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 12px 14px; padding: 4px 0; }
 .gather-months span { flex: 1; display: flex; align-items: center; gap: 10px; font-family: var(--cc-mono); font-size: 11px; letter-spacing: .14em; }
 .gather-months span::after { content: ''; flex: 1; height: 1px; background: var(--cc-line-soft); }
 .gather-pill {
-  position: absolute; padding: 4px 10px;
+  position: relative; max-width: 100%; padding: 4px 10px;
   border: 1px solid var(--cc-line); border-radius: var(--cc-radius-card);
   background: var(--cc-surface); box-shadow: var(--cc-shadow-pop);
   font-family: var(--cc-mono); font-size: 11.5px; color: var(--cc-text); white-space: nowrap;
@@ -61,7 +64,7 @@
 .gather-pill.is-noise { border-style: dashed; box-shadow: none; color: var(--cc-text-3); background: transparent; }
 .gather-pill.is-token { padding: 0; border: 0; background: none; box-shadow: none; }
 .gather-card {
-  position: absolute; left: 50%; bottom: 2%; width: min(420px, 94%);
+  position: relative; margin: auto auto 0; width: min(420px, 100%);
   background: var(--cc-surface); border: 1px solid var(--cc-line); box-shadow: var(--cc-shadow-window);
   padding: 8px 10px 10px; color: var(--cc-text);
   will-change: transform, opacity;
@@ -86,7 +89,7 @@
 .pb-link { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--cc-accent-ink); overflow: visible; pointer-events: none; }
 .pb-chat { position: absolute; white-space: nowrap; }
 .pb-pill {
-  display: inline-block; max-width: 210px; overflow: hidden; text-overflow: ellipsis; vertical-align: top;
+  display: inline-block; vertical-align: top;
   padding: 2px 8px; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-card);
   background: var(--cc-surface); box-shadow: var(--cc-shadow-pop);
   font-family: var(--cc-mono); font-size: 11px; line-height: 1.5; color: var(--cc-text);
@@ -174,10 +177,11 @@
 }
 @media (max-width: 640px) {
   .lp-wrap { padding: 0 16px; }
-  .gather { height: 400px; margin: 10px; }
-  .gather-pill { font-size: 10px; padding: 3px 7px; }
+  .gather { min-height: 0; margin: 10px; gap: 14px; }
+  .gather-flow { gap: 8px; }
+  .gather-pill { font-size: 10px; padding: 3px 7px; white-space: normal; }
   .pb-plot { margin: 10px 10px 0; }
-  .pb-chat:not(.is-key) .pb-pill { width: 10px; height: 10px; padding: 0; font-size: 0; }
+  .pb-chat:not(.is-key) .pb-pill { width: 10px; height: 10px; padding: 0; font-size: 0; overflow: hidden; }
   .pb-chat.is-key .pb-pill { font-size: 10px; }
   .pb-date { display: none; }
   .anat-card { padding-left: 14px; }

@@ -36,8 +36,13 @@
 /* ── toolbar strip: run facts at the left, mode and collapse at the right ── */
 .zw-stage-head { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden; white-space: nowrap; }
 .zw-stage-kind { color: var(--cc-text); }
-.zw-stage-model { color: var(--cc-text-2); overflow: hidden; text-overflow: ellipsis; }
+.zw-stage-model { color: var(--cc-text-2); overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+/* In a narrow stage the model name gives up width; the mode buttons and Collapse keep their full labels. */
+.zw-stage-head > .zw-seg, .zw-stage-head > .zw-collapse, .zw-stage-kind, .zw-stage-prog { flex: none; }
 .zw-stage-prog { color: var(--cc-text-2); font-variant-numeric: tabular-nums; }
+/* The run facts at the left give up width first, so Story, Inspect and Collapse keep their full labels in a narrow stage. */
+.mw-toolbar:has(.zw-stage-head) .mw-leading { flex: 1 1 0; overflow: hidden; }
+.mw-toolbar:has(.zw-stage-head) .mw-tools { flex: none; }
 
 /* Segmented control: platinum buttons in one ink outline; the chosen one takes the coral inverse highlight. */
 .zw-seg {

@@ -32,12 +32,23 @@ const TOKEN = [
 
 const STOPS = [0.06, 0.15, 0.24, 0.33, 0.42, 0.51, 0.6];
 
-/** The pinned stage: the Form run window and the renamed token. Input: progress (motion value 0 to 1 from the ScrollScene). */
+const NUM = '09';
+const SPEC = 'v0.2';
+const TITLE = 'How v0.2 forms a bundle in the browser';
+const LEAD = 'Version 0.2 embeds each chat in the browser with all-MiniLM-L6-v2 and merges clusters while their average similarity stays at or above τ_form 0.26.';
+
+/** The pinned stage: the chapter header, the Form run window and the renamed token, so all three stay on screen while the scene is pinned. Input: progress (motion value 0 to 1 from the ScrollScene). */
 function EngineStage({ progress }) {
   const step = useStep(progress, STOPS);
   const [label, caption] = TOKEN[step];
   return (
     <div className="c2-engine-stage">
+      <header className="c2-engine-head">
+        <p className="ch-label">{`${NUM} · ${SPEC}`}</p>
+        <h2 className="ch-title c2-engine-title">{TITLE}</h2>
+        <p className="ch-lead c2-engine-lead">{LEAD}</p>
+        <p className="c2-note c2-engine-hint">Scroll to move chat r2 through the six steps of a Form run.</p>
+      </header>
       <MacWindow title="Stage — Form run" className="c2-engine-win" bodyClassName="c2-engine-body">
         <div className="c2-engine-rows">
           {STEPS.map((s, i) => {
@@ -60,15 +71,8 @@ function EngineStage({ progress }) {
 
 export default function Engine() {
   return (
-    <Chapter
-      id="engine"
-      num="09"
-      spec="v0.2"
-      title="How v0.2 forms a bundle in the browser"
-      lead="Version 0.2 embeds each chat in the browser with all-MiniLM-L6-v2 and merges clusters while their average similarity stays at or above τ_form 0.26."
-      className="c2 c2-engine"
-    >
-      <p className="c2-note">Scroll to move chat r2 through the six steps of a Form run.</p>
+    <Chapter id="engine" num={NUM} spec={SPEC} title={TITLE} lead={LEAD} className="c2 c2-engine">
+      {/* The chapter header is hidden in CSS for this chapter; EngineStage repeats it inside the pinned stage. */}
       <ScrollScene height="300vh" mobileHeight="200vh" className="c2-engine-scene">
         {(progress) => <EngineStage progress={progress} />}
       </ScrollScene>

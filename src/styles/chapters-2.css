@@ -54,8 +54,14 @@
 .c2-stab { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 20px; }
 
 /* ── 09 engine ── */
-.c2-engine-scene { border: 1px solid var(--cc-line); }
-.c2-engine-stage { height: 100%; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 32px; align-items: center; padding: 24px; }
+/* The chapter header moves into the pinned stage (Engine.jsx), so the label, title and window show together while the scene is pinned. */
+.c2-engine .ch-head { display: none; }
+.c2-engine-scene { background: transparent; }
+.c2-engine-stage { height: 100%; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px 32px; align-content: center; align-items: center; padding: 20px 0; }
+.c2-engine-head { grid-column: 1 / -1; min-width: 0; }
+.c2-engine-title { margin-top: 8px; max-width: none; font-size: clamp(26px, 3.4vw, 42px); }
+.c2-engine-lead { margin-top: 10px; font-size: 17px; }
+.c2-engine-hint { margin: 10px 0 0; }
 .c2-engine-body { min-height: 340px; }
 .c2-engine-rows { padding: 16px; }
 .c2-engine-pending { font-family: var(--cc-mono); font-size: 13px; line-height: 1.6; color: var(--cc-text-3); opacity: 0.55; }
@@ -93,13 +99,17 @@
 
 @media (width < 900px) {
   .c2-sens, .c2-scope { grid-template-columns: minmax(0, 1fr); }
-  .c2-engine-stage { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; align-content: center; }
-  .c2-engine-follow { order: -1; }
+  .c2-engine-stage { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px 0; align-content: center; }
+  .c2-engine-head { order: -2; }
+  .c2-engine-follow { order: -1; gap: 8px; }
   .c2-engine-body { min-height: 0; }
   .c2-engine-caption { font-size: 17px; min-height: 2.9em; }
 }
 @media (width < 640px) {
-  .c2-engine-stage { padding: 10px; }
+  .c2-engine-stage { padding: 8px 0; gap: 10px; }
+  .c2-engine-title { font-size: 24px; }
+  .c2-engine-lead { margin-top: 6px; font-size: 14px; line-height: 1.45; }
+  .c2-engine-hint { display: none; }
   .c2-engine-rows { padding: 10px; }
   .c2-engine-rows .tc { font-size: 12px; }
   .c2-engine-pending { font-size: 12px; }
