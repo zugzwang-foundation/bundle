@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChatGlyph, Spark } from '../Icons';
+import { Spark } from '../Icons';
+import Token from '../cc/Token';
 
 /*
-  Figure 1, animated: four months, nine chats, one concern.
-  The retirement chats are inhaled into a single named place; the rest of
-  Meera's life stays exactly where it was. Loops gently.
+  Figure 1, animated: Meera's chats from March to June. Her nine retirement chats gather into one section named Retirement planning while her other chats stay in place, then scatter again. The loop repeats every 6.2 s.
+  The followed chat, "Pension withdrawal tax rules", is the coral Token. With reduced motion the figure shows the gathered state and does not loop.
 */
+
+const TOKEN = 'Pension withdrawal tax rules';
 
 const CONCERN_PILLS = [
   { t: 'Defined benefit vs defined contribution', l: 2, top: 15 },
@@ -16,7 +18,7 @@ const CONCERN_PILLS = [
   { t: 'Tax on pension withdrawals', l: 24, top: 29 },
   { t: 'Monthly budget on a fixed income', l: 51, top: 29 },
   { t: 'Senior citizen savings scheme rates', l: 2, top: 43 },
-  { t: 'Pension withdrawal tax rules — the re-ask', l: 32, top: 43 },
+  { t: TOKEN, l: 34, top: 43, token: true },
   { t: 'Questions to ask a financial adviser', l: 62, top: 43 },
 ];
 
@@ -25,6 +27,11 @@ const NOISE_PILLS = [
   { t: 'Draft a birthday message for Ravi', l: 62, top: 57 },
   { t: 'Weekend trip ideas near Lonavala', l: 8, top: 57 },
   { t: 'What does deductible mean', l: 38, top: 57 },
+];
+
+const CARD_ROWS = [
+  ['Questions to ask a financial adviser', 'Jun 26'],
+  [TOKEN, 'Jun 9'],
 ];
 
 export default function HeroGather() {
@@ -37,6 +44,8 @@ export default function HeroGather() {
     return () => clearTimeout(t);
   }, [gathered, reduced]);
 
+  const shown = reduced || gathered;
+
   return (
     <div className="gather" aria-hidden="true">
       <div className="gather-months">
@@ -48,30 +57,30 @@ export default function HeroGather() {
       {CONCERN_PILLS.map((p, i) => (
         <motion.div
           key={p.t}
-          className="gather-pill is-concern"
+          className={`gather-pill is-concern ${p.token ? 'is-token' : ''}`}
           initial={false}
           animate={
-            gathered
+            shown
               ? { left: '50%', top: '74%', x: '-50%', scale: 0.35, opacity: 0 }
               : { left: `${p.l}%`, top: `${p.top}%`, x: '0%', scale: 1, opacity: 1 }
           }
           transition={{
-            duration: 0.65,
-            delay: (gathered ? i : CONCERN_PILLS.length - 1 - i) * 0.045,
+            duration: reduced ? 0 : 0.65,
+            delay: reduced ? 0 : (shown ? i : CONCERN_PILLS.length - 1 - i) * 0.045,
             ease: [0.6, 0.05, 0.2, 1],
           }}
         >
-          {p.t}
+          {p.token ? <Token label={p.t} size="sm" /> : p.t}
         </motion.div>
       ))}
 
       {NOISE_PILLS.map((p) => (
         <motion.div
           key={p.t}
-          className="gather-pill"
+          className="gather-pill is-noise"
           initial={false}
-          animate={{ opacity: gathered ? 0.28 : 0.75 }}
-          transition={{ duration: 0.6 }}
+          animate={{ opacity: shown ? 0.4 : 0.85 }}
+          transition={{ duration: reduced ? 0 : 0.6 }}
           style={{ left: `${p.l}%`, top: `${p.top}%` }}
         >
           {p.t}
@@ -81,27 +90,23 @@ export default function HeroGather() {
       <motion.div
         className="gather-card"
         initial={false}
-        animate={gathered ? { opacity: 1, scale: 1, y: 0, x: '-50%' } : { opacity: 0, scale: 0.95, y: 16, x: '-50%' }}
-        transition={{ duration: 0.5, delay: gathered ? 0.32 : 0, ease: [0.16, 1, 0.3, 1] }}
+        animate={shown ? { opacity: 1, scale: 1, y: 0, x: '-50%' } : { opacity: 0, scale: 0.95, y: 16, x: '-50%' }}
+        transition={{ duration: reduced ? 0 : 0.5, delay: shown && !reduced ? 0.32 : 0, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="gather-card-head">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(90deg)', color: 'var(--cl-faint)' }}>
-            <path d="m9 5 8 7-8 7" />
-          </svg>
+          <span className="chev">▾</span>
           <span className="nm">Retirement planning</span>
-          <span className="cl-bundle-count">9</span>
+          <span className="ct">9</span>
           <Spark size={10} />
-          <span style={{ flex: 1 }} />
-          <span style={{ color: 'var(--cl-faint)', letterSpacing: 2 }}>···</span>
         </div>
-        <div className="gather-card-row">
-          <ChatGlyph size={13} /><span className="grow">Questions to ask a financial adviser</span><span className="dt">Jun 26</span>
-        </div>
-        <div className="gather-card-row">
-          <ChatGlyph size={13} /><span className="grow">Pension withdrawal tax rules</span><span className="dt">Jun 9</span>
-        </div>
+        {CARD_ROWS.map(([t, d]) => (
+          <div key={t} className="gather-card-row">
+            <span className="grow">{t === TOKEN ? <Token label={t} size="sm" /> : t}</span>
+            <span className="dt">{d}</span>
+          </div>
+        ))}
         <div className="gather-card-row is-more">
-          <span className="grow">… seven more, back to March</span>
+          <span className="grow">Seven more, back to 12 March</span>
         </div>
       </motion.div>
     </div>

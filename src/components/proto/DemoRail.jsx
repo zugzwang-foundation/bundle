@@ -1,97 +1,113 @@
-import { motion } from 'framer-motion';
 import { INCOMING_CHATS } from '../../data/chats';
 import { JOURNEYS, useBundle } from '../../state/store';
 import { Spark } from '../Icons';
+import { Checkbox } from '../cc/Checkbox';
+import MacWindow from '../cc/MacWindow';
+import { PushButton } from '../cc/PushButton';
+import { TodoList } from '../cc/Transcript';
 import LiveChat from './LiveChat';
 import { runAttach } from '../../stage/runner';
 
-/* Margin notes for the prototype — the document world annotating the
-   product world. Everything here is demo scaffolding, not the feature. */
+const SLIDE = { duration: 0.28, ease: [0.16, 1, 0.3, 1] };
+
+/**
+ * A row of classic radio buttons for one setting.
+ * Input: label (aria-label of the group), options [{ value, label, title? }], value (the selected value), onSelect(value).
+ */
+function Radios({ label, options, value, onSelect }) {
+  return (
+    <div className="dr-seg" role="group" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          className={value === o.value ? 'is-on' : ''}
+          aria-pressed={value === o.value}
+          title={o.title}
+          onClick={() => onSelect(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* Demo controls for the prototype, in a classic window beside the app window. Everything here is demo scaffolding, not the feature. */
 export default function DemoRail() {
   const { state, dispatch } = useBundle();
   const done = JOURNEYS.filter((j) => state.journeys[j.id]).length;
+  const current = JOURNEYS.find((j) => !state.journeys[j.id])?.id;
+  const todos = JOURNEYS.map((j) => {
+    const isDone = Boolean(state.journeys[j.id]);
+    return {
+      id: j.id,
+      done: isDone,
+      label: (
+        <>
+          <span className="dr-jid">{j.id} · </span>{j.label}
+          {!isDone && <span className="dr-jh">{j.hint}</span>}
+        </>
+      ),
+    };
+  });
 
   return (
-    <motion.aside
+    <MacWindow
+      as="aside"
+      title="Demo controls"
+      enter={false}
+      scroll
       className="demo-rail"
+      bodyClassName="dr-body"
       initial={{ x: 40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
-      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      transition={SLIDE}
       aria-label="Demo controls"
     >
-      <div className="mono dr-head">§8 · Step-wise, in your hands</div>
+      <div className="dr-head">§8 · Step-wise, in your hands</div>
       <div className="dr-title">Walk the seven journeys</div>
 
-      <div>
-        {JOURNEYS.map((j) => {
-          const isDone = Boolean(state.journeys[j.id]);
-          return (
-            <div key={j.id} className={`dr-journey ${isDone ? 'is-done' : ''}`}>
-              <span className="dr-check" aria-hidden="true">{isDone ? '✓' : ''}</span>
-              <div>
-                <div className="jl"><span className="dr-jid">{j.id} · </span>{j.label}</div>
-                {!isDone && <div className="jh">{j.hint}</div>}
-              </div>
-            </div>
-          );
-        })}
-        {done === JOURNEYS.length && (
-          <div className="dr-done-line">
-            <Spark size={12} />
-            Seven for seven. Nothing moved, nothing lost.
-          </div>
-        )}
-      </div>
+      <TodoList items={todos} current={current} className="dr-todos" />
+      {done === JOURNEYS.length && (
+        <div className="dr-done-line">
+          <Spark size={12} />
+          Seven for seven. Nothing moved, nothing lost.
+        </div>
+      )}
 
       <div className="dr-block">
-        <div className="mono dr-head" style={{ marginBottom: 12 }}>Demo controls</div>
+        <div className="dr-head">Demo controls</div>
         <div className="dr-ctl">
-          <div className="dr-seg" role="group" aria-label="Account scenario">
-            <button
-              type="button"
-              className={state.scenario === 'meera' ? 'is-on' : ''}
-              onClick={() => dispatch({ type: 'SET_SCENARIO', scenario: 'meera' })}
-            >
-              Meera · 4 months
-            </button>
-            <button
-              type="button"
-              className={state.scenario === 'fresh' ? 'is-on' : ''}
-              onClick={() => dispatch({ type: 'SET_SCENARIO', scenario: 'fresh' })}
-            >
-              New account
-            </button>
-          </div>
+          <Radios
+            label="Account scenario"
+            value={state.scenario}
+            onSelect={(scenario) => dispatch({ type: 'SET_SCENARIO', scenario })}
+            options={[
+              { value: 'meera', label: 'Meera · 4 months' },
+              { value: 'fresh', label: 'New account' },
+            ]}
+          />
 
-          {/* v0.2 — which engine resolves a run: the v0.1 timer, or the pipeline + stage view. */}
-          <div className="dr-switchrow" style={{ paddingBottom: 4 }}>
+          {/* v0.2: which engine resolves a run, the v0.1 timer or the pipeline plus stage view. */}
+          <div className="dr-switchrow">
             <span className="lb">Engine</span>
-            <span className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)' }}>v0.2</span>
-            <div className="dr-seg" role="group" aria-label="Engine" style={{ width: 132 }}>
-              <button
-                type="button"
-                className={state.engine !== 'live' ? 'is-on' : ''}
-                onClick={() => dispatch({ type: 'SET_ENGINE', mode: 'sim' })}
-                title="v0.1 path — 2.2 s timer, fixture groups"
-              >
-                sim
-              </button>
-              <button
-                type="button"
-                className={state.engine === 'live' ? 'is-on' : ''}
-                onClick={() => dispatch({ type: 'SET_ENGINE', mode: 'live' })}
-                title="v0.2 path — the pipeline runs on the stage"
-              >
-                live
-              </button>
-            </div>
+            <span className="dr-tag">v0.2</span>
+            <Radios
+              label="Engine"
+              value={state.engine === 'live' ? 'live' : 'sim'}
+              onSelect={(mode) => dispatch({ type: 'SET_ENGINE', mode })}
+              options={[
+                { value: 'sim', label: 'sim', title: 'v0.1 path — 2.2 s timer, fixture groups' },
+                { value: 'live', label: 'live', title: 'v0.2 path — the pipeline runs on the stage' },
+              ]}
+            />
           </div>
 
           <LiveChat />
 
-          <button
-            type="button"
+          <PushButton
             className="dr-btn"
             disabled={state.scenario === 'fresh' || state.arrivals.length >= INCOMING_CHATS.length}
             onClick={() => {
@@ -105,38 +121,32 @@ export default function DemoRail() {
           >
             A new chat arrives
             <span className="sub">J-2 · {state.arrivals.length}/{INCOMING_CHATS.length}</span>
-          </button>
+          </PushButton>
 
           <div className="dr-switchrow">
-            <span className="lb">Fail the next run</span>
-            <span className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)' }}>§9</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={state.failNext}
-              aria-label="Fail the next run"
-              className={`dr-sw ${state.failNext ? 'is-on' : ''}`}
-              onClick={() => dispatch({ type: 'SET_FAIL_NEXT', value: !state.failNext })}
+            <Checkbox
+              checked={state.failNext}
+              onChange={(value) => dispatch({ type: 'SET_FAIL_NEXT', value })}
+              label="Fail the next run"
+              className="lb"
             />
+            <span className="dr-tag">§9</span>
           </div>
 
           <div className="dr-switchrow">
-            <span className="lb">Memory</span>
-            <span className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)' }}>J-7</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={state.memoryOn}
-              aria-label="Memory"
-              className={`dr-sw ${state.memoryOn ? 'is-on' : ''}`}
-              onClick={() => dispatch({ type: 'TOGGLE_MEMORY' })}
+            <Checkbox
+              checked={state.memoryOn}
+              onChange={() => dispatch({ type: 'TOGGLE_MEMORY' })}
+              label="Memory"
+              className="lb"
             />
+            <span className="dr-tag">J-7</span>
           </div>
 
-          <button type="button" className="dr-btn" onClick={() => dispatch({ type: 'RESET' })}>
+          <PushButton className="dr-btn" onClick={() => dispatch({ type: 'RESET' })}>
             Reset the prototype
             <span className="sub">Fresh start</span>
-          </button>
+          </PushButton>
         </div>
 
         <p className="dr-fine">
@@ -144,6 +154,6 @@ export default function DemoRail() {
           proposal: one toggle, four invariants, six states — <a href="/Bundle_ZW-FS-001_v1_0.pdf" target="_blank" rel="noreferrer">ZW-FS-001 (PDF)</a>.
         </p>
       </div>
-    </motion.aside>
+    </MacWindow>
   );
 }

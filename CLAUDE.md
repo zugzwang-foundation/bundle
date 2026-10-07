@@ -24,8 +24,13 @@ Run `npm test && npm run smoke && npm run build` before considering any change d
 
 Two routes (React Router, `BrowserRouter`):
 
-- `/` — **Landing** (`src/pages/Landing.jsx`) — the explainer, styled as the spec
-  document brought to life. Section components in `src/components/landing/`.
+- `/`: **Landing** (`src/pages/Landing.jsx`), the explainer, told as Meera's four months in twelve chapters (00 to 11) and a footer.
+  - Each chapter is one file in `src/components/landing/chapters/`: `Hero`, `Problem`, `Live`, `Anatomy`, `Verbs`, `Invariants`, `States`, `Sensitive`, `Stability`, `Engine`, `Scope`, `Journeys` (which also exports `FinalCta`) and `Footer`.
+  - `Landing.jsx` renders them in the order of `CHAPTERS` in `src/components/landing/story.js`, which holds each chapter's section id, number and short title. To add, remove or reorder a chapter, change both files.
+  - Helpers shared by the chapters are in `src/components/landing/shared.jsx`. `HeroGather.jsx` and `MiniDemo.jsx` sit beside it.
+  - The menu bar (`MenuBar`, `src/components/cc/MenuBar.jsx`) is fixed at the top and 28 px tall: ✦ at the left, then `Bundle`, `Chapters` (a drop-down of the chapters), `Spec` (the PDF) and `Prototype`. Its clock slot at the right shows the story date, Meera's dates from early March to 9 June 2026 as the reader scrolls, and `Today` at the prototype call to action.
+  - The story rail, at 1200 px and wider, is a small fixed utility window titled `Chapters` that lists the chapters as classic checkboxes: passed chapters checked and struck through, the current one with the coral spinner glyph, later ones empty. Clicking an item scrolls to that chapter. Under 1200 px it is replaced by a 2 px coral progress line under the menu bar (`ScrollProgress`).
+  - Chapter styles are in `src/styles/landing.css` (chapters 00 to 04) and `src/styles/chapters-2.css` (chapters 05 to 11, `c2-` prefix).
 - `/prototype` — **Prototype** (`src/pages/Prototype.jsx`) — a full-screen, operable
   recreation of Claude's chat index with Bundle implemented. Components in
   `src/components/proto/`.
@@ -34,14 +39,18 @@ Two routes (React Router, `BrowserRouter`):
 
 | World | Prefix | Where | Palette |
 |---|---|---|---|
-| Document (Zugzwang spec) | `zw-`, `dr-` | landing, prototype top bar, demo rail | ink `#131211`, bone `#efece4`, gold spark `#e2b96f`, IBM Plex Mono labels |
-| Product (Claude habitat) | `cl-` | everything inside an app frame / figure card | `#262624` bg, `#1f1e1c` sidebar, coral `#d97757`, warm greys |
+| Document (classic Mac OS, System 7 to Mac OS 8) | `cc-` (primitives), `mw-` (`MacWindow`), `ch-` (`Chapter` header), `c2-` (chapters 05 to 11); the `zw-` and `dr-` classes still in `landing.css`, `stage.css` and `proto.css` belong here too | landing, menu bar, story rail, prototype top bar, demo rail, stage view, every window frame | `--cc-*` tokens, one light theme: beige desktop `#E9E3D3`, platinum chrome `#DDDDDD`, ink `#1A1A1A` 1 px outlines, hard offset shadows with no blur (`4px 4px 0` windows, `2px 2px 0` menus and buttons), square windows, coral `#D97757` highlight |
+| Product (Claude habitat) | `cl-` | everything inside `.cl-app` | `--cl-*` tokens, unchanged: `#262624` bg, `#1f1e1c` sidebar, coral `#d97757`, warm greys |
 
-Tokens live in `src/styles/base.css`. The spark ✦ (`Icons.jsx → Spark`) is the only
-element that crosses worlds. Document-world chrome must never leak inside the `.cl-app`
-frame, and vice versa. Type is one family in three voices: Archivo Variable
-(`font-stretch` ~118% + weight 800 for display; normal for UI/body) + IBM Plex Mono
-for utility labels.
+Tokens for both worlds live in `src/styles/base.css`. The document world has one light theme: no theme toggle and no `prefers-color-scheme` branch for the `--cc-*` tokens. Use `--cc-*` tokens in every document-world rule, including the remaining `zw-` and `dr-` rules.
+
+The primitives live in `src/components/cc/` and are styled in `src/styles/cc.css`: `MacWindow`, `MenuBar`, `PushButton`, `Checkbox`, `ProgressBar`, `Marquee`, `Transcript.jsx` (`ToolCall`, `TodoList`, `Diff`, `Keycap`), `Spinner` and `Shimmer`, `Token`, `Stat`, `Chapter`, `motion.jsx` (`Reveal`, `StreamText`, `Counter`, `useActiveSection`) and `scroll.jsx` (`ScrollScene`, `useStep`, `DrawPath`, `ScrollProgress`). `Gallery.jsx` is a usage sheet for the primitives and is not mounted on any route. Inside windows, content follows Claude Code's grammar: tool call rows, todo lists with classic checkboxes, diffs, the spinner and the composer.
+
+The product world is not part of the redesign. The `--cl-*` tokens, `--font-sans` (Archivo) and every `cl-` rule keep their values, and `Sidebar.jsx`, `ChatsPage.jsx`, `Rows.jsx`, `Menus.jsx` and `Overlays.jsx` stay as they are. Windows wrap the product from outside: `MacWindow tone="dark"` keeps the platinum chrome and lets the dark `.cl-app` fill the body edge to edge. `MiniDemo.jsx` keeps its `cl-` markup inside such a window. Two zero-specificity `:where()` guards in `base.css` keep `cl-` elements on Archivo and `cl-` overlays (`.cl-overlay`, `.cl-menu`) on `--cl-text`, so document-world type and colour do not reach the product.
+
+The spark ✦ (`Icons.jsx → Spark`) is the only element that crosses worlds. It is the leftmost item of the menu bar; the site shows no Apple, Anthropic or Claude logo. Document-world chrome must never leak inside the `.cl-app` frame, and vice versa.
+
+Type in the document world is four families, set as tokens in `base.css`: `--cc-chrome` Pixelify Sans for the menu bar, window titles, buttons, tabs and small labels at 14 to 16 px, never for body text; `--cc-serif` EB Garamond for headlines and the story prose at 19 to 21 px; `--cc-mono` JetBrains Mono for transcripts, code, captions, figure labels and keycaps; `--cc-sans` Inter for dense UI text inside windows, such as tables and small controls. The product world uses Archivo (`--font-sans`) only.
 
 ### State (`src/state/store.jsx`)
 
@@ -61,8 +70,16 @@ effects. Generation is `runId`-guarded so a stale timer can't resolve a newer ru
 framer-motion. Chat rows carry `layoutId` = `` `${surface}-${chat.id}` `` (`m-` main,
 `s-` sidebar, `mini-` landing demo) inside one `LayoutGroup` per surface scope — this
 is what makes rows *fly* from the flat list into bundle sections on formation, and
-back on hide/remove. If you add a surface, add a new prefix. Reduced motion is
-respected (framer `useReducedMotion` in the hero + CSS media query).
+back on hide/remove. If you add a surface, add a new prefix.
+
+- `MacWindow` opens with the System 7 zoom rects the first time it enters the viewport: five 1 px ink outline rects step from the window centre (or from an `origin` element) out to the window bounds over 280 ms, then the window appears whole.
+- Key chapters are pinned `ScrollScene`s (`src/components/cc/scroll.jsx`): a tall section (`260vh` by default, `150vh` under 640 px) holding a sticky stage pinned under the 28 px menu bar. framer `useScroll({ target, offset: ['start start', 'end end'] })` gives a progress motion value from 0 at the section top to 1 at the section bottom. Scenes map it with `useTransform`, `useStep` (a step index that changes at given thresholds) and `DrawPath`, so scrolling back plays a scene backwards.
+- Scroll position travels as framer motion values. React state changes only when a `useStep` index changes, never on every scroll frame. Animate only `transform`, `opacity`, `clip-path` and `filter`.
+- `ScrollScene` takes a render function `(progress) => node`. Never call a hook inside that function: pass `progress` to a component and call `useTransform` or `useStep` inside that component.
+- The sticky stage pins only while no ancestor between it and the page has `overflow: hidden` or `overflow: auto`, because either value makes that ancestor the sticky container. Keep wrappers of a `ScrollScene` free of both; `overflow: clip` is safe because it does not create a scroll container.
+- The landing follows one chat as a coral `Token` (`src/components/cc/Token.jsx`, a pill with a 1 px ink border and a 2 px hard shadow): "Pension withdrawal tax rules" (chat `r2`, 2026-06-09 in `src/data/chats.js`), Meera's June re-ask of "Tax on pension withdrawals" (chat `r5`, 2026-04-15). It appears in the hero, lands in her March to June list in chapter 01, joins "Retirement planning" when the toggle flips in chapter 02, sits in the anatomy in chapter 03, keeps its place through a rename in chapter 04, and is renamed at each engine stage in chapter 09. Each rename cross-fades in place while the pill width eases. Coral marks the followed chat or the step happening now; a second coral element in a scene is the one number that matters there.
+- The spinner (`· ✢ ✳ ✶ ✻ ✽` at about 120 ms a frame) and blinking status dots use `steps()` timing. Rows flying, the token routing and scene scrubbing stay smooth.
+- Every animation has a reduced-motion path, through framer `useReducedMotion` or the CSS media query in `base.css`. With reduced motion, `ScrollScene` sets its section to auto height, unpins the stage and fixes progress at 1, so each scene shows its finished state in place; `MacWindow` skips the zoom rects; all content is visible and static.
 
 ## Spec ↔ code map
 
@@ -79,7 +96,7 @@ respected (framer `useReducedMotion` in the hero + CSS media query).
 | J-6 off means off; on resumes | `TOGGLE_BUNDLE` branch (`everFormed` → straight to `ready`) |
 | J-7 memory dependency | `TOGGLE_MEMORY` (pause/resume via `pausedFrom`); disabled toggle + sentence in `ChatsPage.jsx`; door opens `SettingsPopover` |
 | §9 six states | `ChatsPage.jsx` (`Skeletons`, `StateCard`s, note) — the chronological list renders in every one of them (INV-1) |
-| §10 sensitive names | Landing `Sensitive` section (behavioural rules are about generation, which the demo fakes; the Health card depicts R1/R3) |
+| §10 sensitive names | Landing chapter 07, `src/components/landing/chapters/Sensitive.jsx` (behavioural rules are about generation, which the demo fakes; the Health card depicts R1/R3) |
 | §11 stability | bundle sort by latest activity, rows newest-first, corrections permanent — all in `selectIndex` + reducer |
 | §12 acceptance criteria | `scripts/statetest.js` asserts A1, A3-ish, A7–A10, A12–A14 against the reducer |
 | §13 out of scope | inert menu items / nav dispatch a toast; mobile notice on `/prototype` |

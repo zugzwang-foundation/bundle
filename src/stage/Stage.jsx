@@ -1,12 +1,12 @@
-// The stage view — the hood, open (HANDOVER B8). Document world: zw- classes, ink/bone/gold,
-// IBM Plex Mono for the technique lines. Renders the current run from the trace store.
+// The stage view (HANDOVER B8): the current run from the trace store, drawn as a classic Mac window whose cards read like Claude Code tool-call rows. Styles live in src/styles/stage.css (zw- class names).
 //
-//   Story mode  — cards reveal in order as the story clock advances; the clock advances off a
-//                 card only when its event is done AND its dwell has elapsed, so events that
-//                 arrive early are paced and a slow stage is waited on.
-//   Inspect mode — everything live; click a card for the drawer with raw JSON or the numbers.
+// Story mode: cards reveal in order as the story clock advances. The clock leaves a card only when its event is done and its dwell has elapsed, so early events are paced and a slow stage is waited on.
+// Inspect mode: everything is live. Clicking a card opens the drawer with the raw JSON or the numbers.
 import { useEffect, useMemo, useState } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
+import MacWindow from '../components/cc/MacWindow';
+import { PushButton } from '../components/cc/PushButton';
+import { Keycap } from '../components/cc/Transcript';
 import { CONCERNS } from '../data/chats';
 import { CONFIG, describe } from '../engine/config.js';
 import { useBundle } from '../state/store';
@@ -18,7 +18,11 @@ function readModel() {
   try { return import.meta.env.VITE_MODEL || 'claude-fable-5-1'; } catch { return 'claude-fable-5-1'; }
 }
 
-const GLYPH = { pending: '○', running: '◐', done: '●', error: '✕', skipped: '◌' };
+// Splits a technique line such as "claude · emit_card" into a tool-call name and args: { name: 'claude', args: 'emit_card' }. A line without " · " is all name.
+function callOf(technique = '') {
+  const at = technique.indexOf(' · ');
+  return at < 0 ? { name: technique, args: null } : { name: technique.slice(0, at), args: technique.slice(at + 3) };
+}
 
 /* ── helpers over the run ─────────────────────────────────────────── */
 function eventFor(run, stage) {
@@ -107,22 +111,37 @@ export default function Stage({ onCollapse, onRetry, model = readModel() }) {
     if (mode !== 'inspect') setMode('inspect');
   };
 
-  return (
-    <section className="zw-stage" aria-label="Stage view">
-      <header className="zw-stage-head">
-        <span className="zw-mono zw-stage-kind">{run.kind === 'attach' ? 'Attach' : 'Form'} · run {run.reducerRunId ?? '—'}</span>
-        <span className="zw-mono zw-stage-model" title="VITE_MODEL">{model}</span>
-        <span className="zw-mono zw-stage-prog">{n}/{stages.length}{finished ? ' · played' : ''}</span>
-        <span className="grow" />
-        <div className="zw-seg" role="group" aria-label="Stage mode">
-          <button type="button" className={mode === 'story' ? 'is-on' : ''} onClick={() => setMode('story')}>Story</button>
-          <button type="button" className={mode === 'inspect' ? 'is-on' : ''} onClick={() => setMode('inspect')}>Inspect</button>
-        </div>
-        <button type="button" className="zw-collapse" onClick={onCollapse} title="Collapse the stage (`)">
-          Collapse <kbd>`</kbd>
-        </button>
-      </header>
+  const kind = run.kind === 'attach' ? 'Attach' : 'Form';
 
+  return (
+    <MacWindow
+      as="section"
+      className="zw-stage"
+      bodyClassName="zw-stage-body"
+      aria-label="Stage view"
+      title={`Stage · ${kind} run`}
+      enter={false}
+      scroll
+      onClose={onCollapse}
+      leading={
+        <div className="zw-stage-head">
+          <span className="zw-mono zw-stage-kind">run {run.reducerRunId ?? '—'}</span>
+          <span className="zw-mono zw-stage-model" title="VITE_MODEL">{model}</span>
+          <span className="zw-mono zw-stage-prog">{n}/{stages.length}{finished ? ' · played' : ''}</span>
+        </div>
+      }
+      toolbar={
+        <>
+          <div className="zw-seg" role="group" aria-label="Stage mode">
+            <button type="button" className={mode === 'story' ? 'is-on' : ''} aria-pressed={mode === 'story'} onClick={() => setMode('story')}>Story</button>
+            <button type="button" className={mode === 'inspect' ? 'is-on' : ''} aria-pressed={mode === 'inspect'} onClick={() => setMode('inspect')}>Inspect</button>
+          </div>
+          <PushButton className="zw-collapse" onClick={onCollapse} title="Collapse the stage (`)">
+            Collapse <Keycap>`</Keycap>
+          </PushButton>
+        </>
+      }
+    >
       <LayoutGroup id="stage">
         <div className="zw-cards" role="list">
           {view.map(({ st, ev, status, revealed }, i) => (
@@ -140,13 +159,20 @@ export default function Stage({ onCollapse, onRetry, model = readModel() }) {
               transition={{ duration: 0.35 }}
             >
               <div className="zw-card-top">
-                <span className={`zw-glyph is-${status}`} aria-label={status}>{GLYPH[status] || '○'}</span>
-                <span className="zw-mono zw-tech">{st.technique}</span>
+                <span className={`zw-glyph is-${status}`} role="img" aria-label={status} />
+                <h3 className="zw-card-title">{st.title}</h3>
                 {ev?.ms > 0 && status === 'done' && <span className="zw-mono zw-ms">{fmtMs(ev.ms)}</span>}
               </div>
-              <h3 className="zw-card-title">{st.title}</h3>
-              {revealed && <p className="zw-caption">{CAPTIONS[st.key]}</p>}
-              {revealed && <div className="zw-out">{status === 'error' ? <span className="zw-err">{ev?.error || 'Failed'}</span> : summary(st.key, ev, status, nameOf)}</div>}
+              <div className="zw-card-body">
+                <TechLine technique={st.technique} />
+                {revealed && <p className="zw-caption">{CAPTIONS[st.key]}</p>}
+                {revealed && (
+                  <div className="zw-out">
+                    <span className="zw-elbow" aria-hidden="true">⎿ </span>
+                    {status === 'error' ? <span className="zw-err">{ev?.error || 'Failed'}</span> : summary(st.key, ev, status, nameOf)}
+                  </div>
+                )}
+              </div>
               {chipAt === i && (
                 <motion.span layoutId="stage-chip" className="zw-chip" transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
                   <span className="zw-chip-dot" />
@@ -171,7 +197,18 @@ export default function Stage({ onCollapse, onRetry, model = readModel() }) {
           onRetry={() => onRetry?.(run)}
         />
       )}
-    </section>
+    </MacWindow>
+  );
+}
+
+// The technique line as a tool call: name(args) in mono.
+function TechLine({ technique }) {
+  const { name, args } = callOf(technique);
+  return (
+    <div className="zw-tech">
+      <span className="zw-tech-name">{name}</span>
+      {args && <span className="zw-tech-args">({args})</span>}
+    </div>
   );
 }
 
@@ -245,7 +282,7 @@ function Detail({ stage, event, status, run, groups, nameOf, inspect, onRetry })
       {status === 'error' && (
         <div className="zw-error">
           <div>{event?.error || 'This stage failed.'}</div>
-          <button type="button" className="zw-btn" onClick={onRetry}>Try again</button>
+          <PushButton className="zw-btn" onClick={onRetry}>Try again</PushButton>
         </div>
       )}
 
@@ -311,7 +348,7 @@ function Body({ stage, o, status, run, groups, nameOf, event }) {
             <div className="zw-vec" aria-label="vector preview">
               {o.sample.map((v, i) => (
                 <span key={i} className="zw-vec-bar" title={String(v)}>
-                  <span style={{ height: `${Math.min(100, Math.abs(v) * 400)}%`, background: v < 0 ? 'var(--bone-faint)' : 'var(--spark)' }} />
+                  <span className={v < 0 ? 'is-neg' : 'is-pos'} style={{ height: `${Math.min(100, Math.abs(v) * 400)}%` }} />
                   <em className="zw-mono">{v.toFixed(2)}</em>
                 </span>
               ))}
@@ -399,7 +436,7 @@ function Body({ stage, o, status, run, groups, nameOf, event }) {
         <div>
           <ul className="zw-bundles">
             {(o.bundles || []).map((b) => (
-              <li key={b.id}><span className="zw-map-swatch" style={{ background: 'var(--spark)' }} /><b>{nameOf(b.id)}</b><span className="zw-mono zw-dim">{b.chatIds?.length ?? b.size ?? ''} · {b.id}{b.nameSource === 'person' ? ' · yours' : ''}</span></li>
+              <li key={b.id}><span className="zw-map-swatch is-accent" /><b>{nameOf(b.id)}</b><span className="zw-mono zw-dim">{b.chatIds?.length ?? b.size ?? ''} · {b.id}{b.nameSource === 'person' ? ' · yours' : ''}</span></li>
             ))}
           </ul>
           <Overrides list={o.overrides} />

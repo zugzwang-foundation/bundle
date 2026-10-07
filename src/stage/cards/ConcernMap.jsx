@@ -1,7 +1,6 @@
-// The concern map — every chat a dot, near dots joined (B8). d3-force lays it out once,
-// synchronously (a few hundred ticks for 40 nodes is a couple of ms), so React only
-// renders positions; the new chat's node animates in with framer-motion.
-import { useMemo, useState } from 'react';
+// The concern map (B8): every chat is a dot and similar chats are joined. d3-force lays it out once, synchronously (a few hundred ticks for 40 nodes take a couple of ms), so React only renders positions; the new chat's node animates in with framer-motion.
+// Classic Mac look: dots are ink outlines on --cc-surface, each formed cluster gets a 1-bit fill pattern, and the followed cluster (the new chat's, or the hovered dot's) is solid coral.
+import { useId, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force';
 import { CONFIG } from '../../engine/config.js';
@@ -9,14 +8,51 @@ import { CONFIG } from '../../engine/config.js';
 export const W = 600;
 export const H = 320;
 
-// Document-world palette for bundles; unknown / not-yet-formed = faint grey.
-const PALETTE = ['#e2b96f', '#7fb3a5', '#c98b8b', '#8f9fcb', '#b0a0d8', '#b7a06b', '#9fbf8a'];
-const GREY = '#6d685f';
+// 1-bit fill patterns, one per formed cluster in sorted key order; 'plain' is the bare surface.
+const PATTERNS = ['plain', 'dither', 'hatch', 'vlines', 'checker', 'hlines', 'cross'];
 
-function groupColour(groupKeys) {
-  const keys = [...groupKeys].filter(Boolean).sort();
-  const map = new Map(keys.map((k, i) => [k, PALETTE[i % PALETTE.length]]));
-  return (k) => (k ? map.get(k) || GREY : GREY);
+/**
+ * Builds the fill lookup for cluster keys.
+ * Input: groupKeys (every node's cluster key, nulls allowed), focusKey (the cluster drawn coral), pid (the prefix of the pattern ids in this map's <defs>).
+ * Output: a function from a cluster key to a CSS fill value.
+ */
+function groupFill(groupKeys, focusKey, pid) {
+  const keys = [...new Set(groupKeys)].filter(Boolean).sort();
+  const map = new Map(keys.map((k, i) => [k, PATTERNS[i % PATTERNS.length]]));
+  return (k) => {
+    if (k && k === focusKey) return 'var(--cc-accent)';
+    const p = k ? map.get(k) : null;
+    return !p || p === 'plain' ? 'var(--cc-surface)' : `url(#${pid}-${p})`;
+  };
+}
+
+// The pattern tiles, drawn in ink on the surface colour with crisp pixels.
+function PatternDefs({ pid }) {
+  const tile = (name, size, body) => (
+    <pattern id={`${pid}-${name}`} width={size} height={size} patternUnits="userSpaceOnUse" shapeRendering="crispEdges">
+      <rect width={size} height={size} className="zw-map-pat-bg" />
+      {body}
+    </pattern>
+  );
+  return (
+    <defs>
+      {tile('dither', 4, <><rect x="0" y="0" width="1" height="1" className="zw-map-pat-ink" /><rect x="2" y="2" width="1" height="1" className="zw-map-pat-ink" /></>)}
+      {tile('hatch', 4, <path d="M0 4L4 0" className="zw-map-pat-line" />)}
+      {tile('vlines', 3, <rect x="0" y="0" width="1" height="3" className="zw-map-pat-ink" />)}
+      {tile('checker', 2, <><rect x="0" y="0" width="1" height="1" className="zw-map-pat-ink" /><rect x="1" y="1" width="1" height="1" className="zw-map-pat-ink" /></>)}
+      {tile('hlines', 3, <rect x="0" y="0" width="3" height="1" className="zw-map-pat-ink" />)}
+      {tile('cross', 4, <><rect x="0" y="0" width="1" height="4" className="zw-map-pat-ink" /><rect x="0" y="0" width="4" height="1" className="zw-map-pat-ink" /></>)}
+    </defs>
+  );
+}
+
+// A 10 px key square in a cluster's fill, for the neighbour list.
+function Key({ fill }) {
+  return (
+    <svg className="zw-map-key" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+      <rect x="0.5" y="0.5" width="9" height="9" style={{ fill }} />
+    </svg>
+  );
 }
 
 function layout(nodes, links, newId) {
@@ -46,16 +82,17 @@ function layout(nodes, links, newId) {
 
 /**
  * @param {{ event: StageEvent|null, cards: Chat[], groups: Map<string,string>|null, newId?: string|null, tauEdge?: number, compact?: boolean }} props
- *   groups — chatId → bundle id, once bundles exist (colours the dots); null before formation.
+ *   groups — chatId → bundle id, once bundles exist (sets each dot's cluster fill); null before formation.
  */
 export default function ConcernMap({ event, cards = [], groups = null, newId = null, tauEdge = CONFIG.tauEdge, compact = false }) {
   const reduce = useReducedMotion();
+  const pid = `zwmap${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const [hover, setHover] = useState(null);
   const out = event?.output || {};
   const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   const theNew = newId ?? out.newId ?? null;
 
-  const { nodes, links, colour } = useMemo(() => {
+  const { nodes, links } = useMemo(() => {
     const raw = Array.isArray(out.nodes) && out.nodes.length ? out.nodes : cards.map((c) => ({ id: c.id, title: c.title, group: null }));
     const nodes = raw.map((d) => ({
       id: d.id,
@@ -67,7 +104,7 @@ export default function ConcernMap({ event, cards = [], groups = null, newId = n
       .filter((e) => e.score >= tauEdge && ids.has(e.a) && ids.has(e.b))
       .map((e) => ({ source: e.a, target: e.b, score: e.score }));
     layout(nodes, links, theNew);
-    return { nodes, links, colour: groupColour(nodes.map((d) => d.group)) };
+    return { nodes, links };
   }, [out.nodes, out.edges, cards, groups, tauEdge, theNew, byId]);
 
   // Neighbour list beneath: the new chat's top-3 (form: keyed by id; attach: a flat array).
@@ -80,18 +117,20 @@ export default function ConcernMap({ event, cards = [], groups = null, newId = n
   }, [out.neighbours, theNew]);
 
   const hovered = hover ? nodes.find((d) => d.id === hover) : null;
+  // The coral cluster: the hovered dot's cluster, else the new chat's.
+  const focusKey = hovered?.group ?? nodes.find((d) => d.id === theNew)?.group ?? null;
+  const fillOf = groupFill(nodes.map((d) => d.group), focusKey, pid);
 
   return (
     <div className={`zw-map ${compact ? 'is-compact' : ''}`}>
       <svg viewBox={`0 0 ${W} ${H}`} className="zw-map-svg" role="img" aria-label="Concern map: chats as dots, similar chats joined">
+        <PatternDefs pid={pid} />
         <g className="zw-map-links">
           {links.map((l, i) => (
             <line
               key={i}
               x1={l.source.x} y1={l.source.y} x2={l.target.x} y2={l.target.y}
-              stroke="currentColor"
-              strokeOpacity={0.12 + (l.score - tauEdge) * 1.2}
-              strokeWidth={0.8 + l.score}
+              strokeWidth={0.8 + (l.score - tauEdge) * 4}
             />
           ))}
         </g>
@@ -99,15 +138,12 @@ export default function ConcernMap({ event, cards = [], groups = null, newId = n
           {nodes.map((d) => {
             const isNew = d.id === theNew;
             const r = isNew ? 7 : 5;
-            const fill = colour(d.group);
             const common = {
               r,
-              fill,
-              stroke: isNew ? 'var(--bone)' : 'var(--ink)',
-              strokeWidth: isNew ? 2 : 1,
+              className: `zw-map-node${isNew ? ' is-new' : ''}${d.group ? '' : ' is-loose'}${d.group && d.group === focusKey ? ' is-focus' : ''}`,
               onMouseEnter: () => setHover(d.id),
               onMouseLeave: () => setHover((h) => (h === d.id ? null : h)),
-              style: { cursor: 'default' },
+              style: { cursor: 'default', fill: fillOf(d.group) },
             };
             return isNew ? (
               <motion.circle
@@ -128,7 +164,8 @@ export default function ConcernMap({ event, cards = [], groups = null, newId = n
         </g>
         {hovered && (
           <g transform={`translate(${Math.min(hovered.x + 10, W - 190)}, ${Math.max(hovered.y - 14, 12)})`} pointerEvents="none">
-            <rect x={0} y={-11} width={Math.min(190, hovered.title.length * 6.4 + 12)} height={20} rx={4} fill="var(--ink)" stroke="var(--hair-strong)" />
+            <rect x={2} y={-9} width={Math.min(190, hovered.title.length * 6.7 + 12)} height={20} className="zw-map-tip-shadow" />
+            <rect x={0} y={-11} width={Math.min(190, hovered.title.length * 6.7 + 12)} height={20} className="zw-map-tip-box" />
             <text x={6} y={3} className="zw-map-tip">{hovered.title.length > 28 ? hovered.title.slice(0, 27) + '…' : hovered.title}</text>
           </g>
         )}
@@ -139,7 +176,7 @@ export default function ConcernMap({ event, cards = [], groups = null, newId = n
           <ol className="zw-map-near">
             {near.map((n) => (
               <li key={n.id}>
-                <span className="zw-map-swatch" style={{ background: colour(groups?.get(n.id) ?? nodes.find((d) => d.id === n.id)?.group) }} />
+                <Key fill={fillOf(groups?.get(n.id) ?? nodes.find((d) => d.id === n.id)?.group)} />
                 <span className="t">{byId.get(n.id)?.title || nodes.find((d) => d.id === n.id)?.title || n.id}</span>
                 <span className="zw-mono s">{n.score.toFixed(2)}</span>
               </li>

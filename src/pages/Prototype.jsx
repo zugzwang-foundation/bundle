@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { Gear } from '../components/Icons';
+import { Gear, Spark } from '../components/Icons';
+import MacWindow from '../components/cc/MacWindow';
+import { Keycap } from '../components/cc/Transcript';
 import ChatsPage from '../components/proto/ChatsPage';
 import Sidebar from '../components/proto/Sidebar';
 import DemoRail from '../components/proto/DemoRail';
@@ -84,10 +86,9 @@ export default function Prototype() {
     <MenuProvider>
       <div className="proto-page">
         <header className="proto-bar" style={{ position: 'relative' }}>
-          <Link to="/" className="proto-back mono">← Explainer</Link>
-          <div className="proto-bar-title mono">
-            Bundle · ZW·FS·001 — <span className="hl">interactive prototype</span>
-          </div>
+          <span className="proto-bar-mark" aria-hidden="true"><Spark size={14} /></span>
+          <Link to="/" className="proto-back">← Explainer</Link>
+          <div className="proto-bar-title">Bundle prototype</div>
           <div className="proto-bar-actions">
             {run && (
               <button
@@ -98,16 +99,17 @@ export default function Prototype() {
                 title="Toggle the stage view (`)"
               >
                 Stage
+                <span className="bar-key" aria-hidden="true"><Keycap>`</Keycap></span>
               </button>
             )}
             <button
               type="button"
-              className={`bar-btn ${settingsOpen ? 'is-active' : ''}`}
+              className={`bar-btn bar-btn--icon ${settingsOpen ? 'is-active' : ''}`}
               aria-label="Settings"
               aria-expanded={settingsOpen}
               onClick={() => setSettingsOpen((v) => !v)}
             >
-              <Gear size={13} />
+              <Gear size={14} />
             </button>
             <button
               type="button"
@@ -123,7 +125,7 @@ export default function Prototype() {
 
         {/* Mobile is explicitly out of scope for v1 (§13, NG3). */}
         <div className="proto-mobile-note">
-          <span className="mono" style={{ fontSize: 9 }}>§13</span>
+          <span className="proto-mobile-tag">§13</span>
           <span>
             This prototype mirrors Claude's desktop index; mobile is out of scope for Bundle v1.
             It works here, but it deserves a wider screen.
@@ -131,15 +133,16 @@ export default function Prototype() {
         </div>
 
         <div className="proto-body">
-          {/* The frame: Claude UI left, the stage right (B8: ~40/60 when open). The app
-              frame is always the same node — opening the stage never re-mounts the list (INV-1). */}
+          {/* The frame: Claude UI left, the stage right (B8: ~40/60 when open). The app frame is always the same node inside the same MacWindow, so opening the stage never re-mounts the list (INV-1). */}
           <div className={`proto-frame ${narrow ? 'is-stacked' : ''}`}>
-            <LayoutGroup>
-              <div className="cl-app">
-                <Sidebar />
-                <ChatsPage onOpenSettings={() => setSettingsOpen(true)} />
-              </div>
-            </LayoutGroup>
+            <MacWindow tone="dark" title="Claude" enter={false} className="proto-app" bodyClassName="proto-app-body">
+              <LayoutGroup>
+                <div className="cl-app">
+                  <Sidebar />
+                  <ChatsPage onOpenSettings={() => setSettingsOpen(true)} />
+                </div>
+              </LayoutGroup>
+            </MacWindow>
             <motion.div
               className={`zw-stage-wrap ${narrow ? 'is-stacked' : ''}`}
               initial={false}
@@ -149,12 +152,15 @@ export default function Prototype() {
               inert={!open}
               style={{ pointerEvents: open ? 'auto' : 'none' }}
             >
-              {run && (
-                <Stage
-                  onCollapse={() => setVisible(false)}
-                  onRetry={(r) => retry(r, { state: stateRef.current, dispatch })}
-                />
-              )}
+              {/* The room pads the stage so its window shadow is not clipped by the wrap's overflow. */}
+              <div className="zw-stage-room">
+                {run && (
+                  <Stage
+                    onCollapse={() => setVisible(false)}
+                    onRetry={(r) => retry(r, { state: stateRef.current, dispatch })}
+                  />
+                )}
+              </div>
             </motion.div>
           </div>
           <AnimatePresence>{railOpen && <DemoRail />}</AnimatePresence>

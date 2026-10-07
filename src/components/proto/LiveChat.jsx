@@ -4,6 +4,7 @@ import { hasKey, config } from '../../engine/anthropic';
 import { reply } from '../../engine/reply';
 import { card } from '../../engine/card';
 import { runAttach } from '../../stage/runner';
+import { PushButton } from '../cc/PushButton';
 
 const SUGGESTED =
   'My bank says the SCSS interest is credited quarterly — should I move part of it to a 5-year tax-saver FD instead?';
@@ -58,8 +59,8 @@ export default function LiveChat() {
 
   return (
     <div className="dr-live">
-      <div className="lb" style={{ marginBottom: 6 }}>
-        New chat · real reply <span className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)' }}>{config.model} · {config.mode}</span>
+      <div className="lb">
+        New chat · real reply <span className="dr-tag">{config.model} · {config.mode}</span>
       </div>
       <textarea
         className="dr-ta"
@@ -70,31 +71,33 @@ export default function LiveChat() {
         onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }}
         placeholder="Ask Claude anything…"
       />
-      <button
-        type="button"
-        className="dr-btn"
-        disabled={!hasKey() || busy || !text.trim() || state.scenario === 'fresh'}
-        onClick={send}
-      >
-        {stage === 'reply' ? 'Claude is replying…' : stage === 'card' ? 'Claude writes the card…' : 'Send'}
-        <span className="sub">Reply → Card → list</span>
-      </button>
-      {error && <p className="dr-fine" style={{ color: '#e07a5f' }}>Couldn't reach Claude: {error}</p>}
+      <div className="dr-send-row">
+        <span className="dr-tag">Reply → Card → list</span>
+        <PushButton
+          isDefault
+          className="dr-send"
+          disabled={!hasKey() || busy || !text.trim() || state.scenario === 'fresh'}
+          onClick={send}
+        >
+          {stage === 'reply' ? 'Claude is replying…' : stage === 'card' ? 'Claude writes the card…' : 'Send'}
+        </PushButton>
+      </div>
+      {error && <p className="dr-fine dr-error">Couldn't reach Claude: {error}</p>}
       {result && (
         <div className="dr-live-out">
-          <div className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)' }}>
+          <div className="dr-tag">
             CARD · {result.ms.reply} ms reply · {result.ms.card} ms card
           </div>
           <div className="dr-live-title">{result.card.title}</div>
           <div className="dr-live-sum">{result.card.summary}</div>
-          <div className="sub mono" style={{ fontSize: 9, color: 'var(--bone-faint)', marginTop: 4 }}>
+          <div className="dr-tag">
             {state.engine === 'live'
               ? 'ATTACH → on the stage'
               : `PLACED → ${result.card.concern || 'none'}${result.card.runner_up ? ` · runner-up ${result.card.runner_up}` : ''}`}
           </div>
-          <div className="dr-live-sum" style={{ opacity: 0.8 }}>{result.card.reason}</div>
-          <details style={{ marginTop: 6 }}>
-            <summary className="sub mono" style={{ fontSize: 9, cursor: 'pointer' }}>REPLY</summary>
+          <div className="dr-live-sum">{result.card.reason}</div>
+          <details className="dr-live-reply">
+            <summary className="dr-tag">REPLY</summary>
             <div className="dr-live-sum" style={{ whiteSpace: 'pre-wrap' }}>{result.reply}</div>
           </details>
         </div>

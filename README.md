@@ -18,7 +18,7 @@ named, collapsible sections above the chronological list. A bundle is a view, no
 | v0.2 product + technical handover | [docs/HANDOVER_v0.2.md](docs/HANDOVER_v0.2.md) |
 | Working brief for continued development | [CLAUDE.md](CLAUDE.md) |
 | Repository | https://github.com/Zugzwang-world/bundle |
-| Build-day mirror (same history) | https://github.com/Zugzwang-world/bundle-v0.2 |
+| Build-day mirror (keeps the pre-2026-10-07 history) | https://github.com/Zugzwang-world/bundle-v0.2 |
 
 ## The four invariants
 
@@ -103,10 +103,19 @@ src/
   stage/                 Stage.jsx · cards/ · story.js (captions) · trace.js · runner.js · mock.js
   data/chats.js          Meera's four months, fresh-account data, incoming chats
   state/store.jsx        reducer + provider + selectIndex (one derivation, both surfaces)
-  components/landing/    hero gather animation, live mini-demo, all sections
+  components/cc/         classic Mac primitives: MacWindow · MenuBar · PushButton · Checkbox · ProgressBar
+                         Marquee · Transcript (ToolCall, TodoList, Diff, Keycap) · Spinner (+ Shimmer)
+                         Token · Stat · Chapter · motion.jsx (Reveal, StreamText, Counter, useActiveSection)
+                         scroll.jsx (ScrollScene, useStep, DrawPath, ScrollProgress)
+                         Gallery.jsx (usage sheet for the primitives, not mounted on any route)
+  components/landing/    story.js (CHAPTERS: chapter order, ids, story rail titles) · shared.jsx (chapter helpers)
+                         HeroGather.jsx · MiniDemo.jsx (cl- markup inside a MacWindow)
+    chapters/            one file per chapter: Hero · Problem · Live · Anatomy · Verbs · Invariants · States
+                         Sensitive · Stability · Engine · Scope · Journeys (+ FinalCta) · Footer
   components/proto/      sidebar, chats page, bundle sections, menus, dialogs, demo rail, live chat
-  pages/                 Landing, Prototype
-  styles/                base tokens · landing (document world) · proto (Claude habitat)
+  pages/                 Landing (renders the chapters in CHAPTERS order), Prototype
+  styles/                base (--cc-* and --cl-* tokens) · cc (primitives) · landing (chapters 00 to 04)
+                         chapters-2 (chapters 05 to 11, c2- prefix) · proto (Claude habitat) · stage (stage view)
 scripts/                 statetest.js + smoke.jsx (run via npm test / npm run smoke)
 CLAUDE.md                build brief: spec↔code map, immutable copy register, constraints
 ```

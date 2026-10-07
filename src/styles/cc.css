@@ -1,0 +1,785 @@
+/* ────────────────────────────────────────────────────────────────────
+   Classic Mac primitives (src/components/cc). Colours, fonts, radii, shadows and motion come from the --cc-* tokens in base.css.
+   Sections: utilities · MacWindow (frame, title bar, boxes, toolbar strip, body, scroll bars, windowshade, zoom rects, utility variant) · MenuBar · PushButton · Checkbox · ProgressBar · Marquee · Keycap · Spinner and Shimmer · StreamText · Counter · ToolCall · TodoList · Diff · Chapter · ScrollScene · ScrollProgress · Token · Stat · reduced motion.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* ── utilities ─────────────────────────────────────────────────────── */
+
+/* Visually hidden, still read by screen readers. */
+.cc-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mono utility label: paths, tool names, chapter numbers. */
+.cc-label {
+  font-family: var(--cc-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--cc-text-3);
+}
+
+/* ── MacWindow · frame ─────────────────────────────────────────────── */
+/* Square corners, a 1 px ink outline and a hard offset shadow. */
+
+.mw {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-window);
+  background: var(--cc-surface);
+  color: var(--cc-text);
+  box-shadow: var(--cc-shadow-window);
+}
+/* Hidden until the zoom rects finish; the layout space is kept. */
+.mw--pending { visibility: hidden; }
+
+/* ── MacWindow · title bar ─────────────────────────────────────────── */
+/* 22 px platinum bar over a 1 px ink rule; six pinstripes when active, interrupted by platinum plates behind the boxes and the title. */
+
+.mw-titlebar {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 23px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--cc-line);
+  background: var(--cc-platinum);
+  font-family: var(--cc-chrome);
+  user-select: none;
+}
+/* Six 1 px ink lines on a 2 px pitch. */
+.mw-titlebar::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 2px;
+  right: 2px;
+  height: 11px;
+  background: repeating-linear-gradient(to bottom, var(--cc-line) 0 1px, transparent 1px 2px);
+}
+.mw--inactive .mw-titlebar::before { display: none; }
+
+.mw-plate {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 3px;
+  background: var(--cc-platinum);
+}
+.mw-plate--start { margin-left: 4px; }
+.mw-plate--end { margin-left: auto; margin-right: 4px; }
+
+.mw-title {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  max-width: calc(100% - 96px);
+  padding: 0 8px;
+  overflow: hidden;
+  transform: translateX(-50%);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--cc-text);
+}
+.mw--inactive .mw-title { color: var(--cc-platinum-dk); }
+
+/* ── MacWindow · boxes ─────────────────────────────────────────────── */
+/* 11 px close, zoom and windowshade boxes: 1 px ink border with a bevel inside. */
+
+.mw-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 11px;
+  height: 11px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--cc-line);
+  border-radius: 0;
+  background: var(--cc-platinum);
+  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  color: var(--cc-line);
+  cursor: default;
+}
+button.mw-box { cursor: pointer; }
+.mw-box svg { display: block; width: 9px; height: 9px; }
+/* The close box shows its X burst only while hovered, pressed or focused. */
+.mw-box--close svg { visibility: hidden; }
+.mw-box--close:hover svg,
+.mw-box--close:active svg,
+.mw-box--close:focus-visible svg { visibility: visible; }
+.mw-box:active { background: var(--cc-platinum-lo); box-shadow: inset 1px 1px 0 var(--cc-platinum-dk); }
+.mw--inactive .mw-box:not(button) { visibility: hidden; }
+
+/* The three boxes in one row (TrafficLights). */
+.mw-boxes { display: inline-flex; align-items: center; gap: 4px; }
+.mw-boxes.is-off .mw-box:not(button) { visibility: hidden; }
+
+/* ── MacWindow · toolbar strip ─────────────────────────────────────── */
+/* A 28 px platinum strip with bevels under the title bar: leading at the left, toolbar at the right. */
+
+.mw-toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-bottom: 1px solid var(--cc-line);
+  background: var(--cc-platinum);
+  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  color: var(--cc-text);
+  font-family: var(--cc-chrome);
+  font-size: 14px;
+}
+.mw-leading,
+.mw-tools { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mw-tools { margin-left: auto; }
+
+/* ── MacWindow · body ──────────────────────────────────────────────── */
+
+.mw-pane { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.mw-pane.is-clipped { overflow: hidden; }
+.mw-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  background: var(--cc-surface);
+  color: var(--cc-text);
+}
+/* tone="dark": the dark product app fills the body edge to edge; the chrome stays platinum. */
+.mw--dark .mw-body { background: var(--cl-bg); color: var(--cl-text); }
+
+/* ── MacWindow · scroll bars ───────────────────────────────────────── */
+/* scroll prop: a platinum track with a 50% grey dither, square arrow buttons and a platinum thumb (Chrome and Safari; Firefox gets platinum colours). */
+
+.mw-body--scroll { overflow: auto; overscroll-behavior: contain; }
+@supports selector(::-webkit-scrollbar) {
+  /* A non-auto scrollbar-color or scrollbar-width, inherited or not, would switch the webkit styles off. */
+  .mw-body--scroll { scrollbar-color: auto; scrollbar-width: auto; }
+  .mw-body--scroll::-webkit-scrollbar { width: 16px; height: 16px; background: var(--cc-platinum); }
+  .mw-body--scroll::-webkit-scrollbar-track { background: repeating-conic-gradient(var(--cc-platinum-lo) 0% 25%, var(--cc-platinum) 0% 50%) 0 0 / 2px 2px; }
+  .mw-body--scroll::-webkit-scrollbar-track:vertical { border-left: 1px solid var(--cc-line); }
+  .mw-body--scroll::-webkit-scrollbar-track:horizontal { border-top: 1px solid var(--cc-line); }
+  .mw-body--scroll::-webkit-scrollbar-thumb {
+    border: 1px solid var(--cc-line);
+    background: var(--cc-platinum);
+    box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  }
+  .mw-body--scroll::-webkit-scrollbar-button:single-button {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--cc-line);
+    background-color: var(--cc-platinum);
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  }
+  .mw-body--scroll::-webkit-scrollbar-button:single-button:active { background-color: var(--cc-platinum-lo); }
+  /* Data URIs cannot read custom properties, so the arrows repeat the ink value of --cc-line. */
+  .mw-body--scroll::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 1.5 7.5 6h-7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
+  .mw-body--scroll::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 6.5 7.5 2h-7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
+  .mw-body--scroll::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M1.5 4 6 .5v7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
+  .mw-body--scroll::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M6.5 4 2 .5v7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
+  .mw-body--scroll::-webkit-scrollbar-corner { background: var(--cc-platinum); }
+}
+@supports not selector(::-webkit-scrollbar) {
+  .mw-body--scroll { scrollbar-color: var(--cc-platinum-lo) var(--cc-platinum); }
+}
+
+/* ── MacWindow · windowshade ───────────────────────────────────────── */
+/* shaded prop: the pane's height animates to 0 and the window shrinks to its title bar. */
+
+.mw.mw--shaded { height: auto !important; min-height: 0 !important; }
+.mw--shaded .mw-pane { flex: none; }
+.mw--shaded .mw-titlebar { height: 22px; border-bottom-width: 0; }
+
+/* ── MacWindow · zoom rects ────────────────────────────────────────── */
+/* Five 1 px ink outlines, fixed to the viewport, each shown for two 56 ms steps from the centre (or origin) out to the window bounds. */
+
+.mw-zoomrect {
+  position: fixed;
+  z-index: 300;
+  border: 1px solid var(--cc-line);
+  opacity: 0;
+  pointer-events: none;
+  animation: mw-zoomrect 112ms steps(1, end) forwards;
+}
+@keyframes mw-zoomrect {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── MacWindow · utility variant ───────────────────────────────────── */
+/* variant="utility": a floating palette with a thin title bar (the story rail). */
+
+.mw--utility .mw-titlebar { height: 18px; }
+.mw--utility .mw-titlebar::before { top: 4px; height: 9px; }
+.mw--utility .mw-box { width: 9px; height: 9px; }
+.mw--utility .mw-box svg { width: 7px; height: 7px; }
+.mw--utility .mw-title { line-height: 17px; }
+.mw--utility.mw--shaded .mw-titlebar { height: 17px; }
+
+/* ── MenuBar ───────────────────────────────────────────────────────── */
+/* The 28 px fixed bar: white, a 1 px ink rule under it, titles in the chrome face, drop-down menus with the coral inverse highlight. */
+
+.cc-menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  height: var(--cc-topbar);
+  padding: 0 8px;
+  border-bottom: 1px solid var(--cc-line);
+  background: var(--cc-surface);
+  color: var(--cc-text);
+  font-family: var(--cc-chrome);
+  font-size: 14px;
+  line-height: 1;
+}
+/* Titles that do not fit are cut off; the menus are fixed-position, so this clip never hides them. */
+.cc-menubar-list { display: flex; align-items: stretch; flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; overflow: hidden; list-style: none; }
+.cc-menubar-item,
+.cc-menubar-mark { display: flex; }
+.cc-menubar-mark { align-items: center; padding: 0 10px; }
+.cc-menubar-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+.cc-menubar-title:hover,
+.cc-menubar-title.is-open,
+.cc-menubar-title:focus-visible { background: var(--cc-select); color: var(--cc-text); outline: none; }
+.cc-menubar .ic-spark { display: block; color: currentColor; }
+.cc-menubar-spark { display: flex; }
+.cc-menubar-clock { display: flex; align-items: center; flex: none; padding: 0 8px; white-space: nowrap; }
+
+.cc-menu {
+  position: fixed;
+  top: var(--cc-topbar);
+  z-index: 101;
+  min-width: 180px;
+  max-width: calc(100vw - 8px);
+  margin: 0;
+  padding: 2px 0;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-window);
+  background: var(--cc-surface);
+  box-shadow: var(--cc-shadow-pop);
+  list-style: none;
+}
+.cc-menu:focus { outline: none; }
+.cc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 16px 2px 14px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--cc-text);
+  font-family: var(--cc-chrome);
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+.cc-menu-item:hover,
+.cc-menu-item:focus { background: var(--cc-select); color: var(--cc-text); outline: none; }
+.cc-menu-item[aria-disabled="true"] { color: var(--cc-platinum-dk); }
+.cc-menu-item[aria-disabled="true"]:hover,
+.cc-menu-item[aria-disabled="true"]:focus { background: none; }
+.cc-menu-key { margin-left: auto; color: var(--cc-text-2); }
+/* Classic dotted separator. */
+.cc-menu-sep { height: 1px; margin: 3px 0; background: repeating-linear-gradient(90deg, var(--cc-platinum-lo) 0 1px, transparent 1px 2px); }
+
+/* ── PushButton ────────────────────────────────────────────────────── */
+
+.cc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 16px;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-btn);
+  background: var(--cc-platinum);
+  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  color: var(--cc-text);
+  font-family: var(--cc-chrome);
+  font-size: 14px;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cc-btn:active { background: var(--cc-select); box-shadow: inset 1px 1px 0 var(--cc-accent-ink); }
+.cc-btn:disabled,
+.cc-btn[aria-disabled="true"] { color: var(--cc-platinum-dk); cursor: default; }
+.cc-btn:disabled:active { background: var(--cc-platinum); box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo); }
+/* The default button's thick outer ring, 1 px clear of the button; the margin keeps neighbours off the ring. */
+.cc-btn--default { margin: 4px; outline: 3px solid var(--cc-line); outline-offset: 1px; }
+.cc-btn:focus-visible { outline: 2px solid var(--cc-accent); outline-offset: 2px; }
+.cc-btn--default:focus-visible { outline: 3px solid var(--cc-accent); outline-offset: 1px; }
+
+/* ── Checkbox ──────────────────────────────────────────────────────── */
+/* 12 px square, 1 px ink border, an X from corner to corner when checked. */
+
+.cc-check { position: relative; display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+/* The real checkbox sits under the drawn box for keyboard and screen reader use. */
+.cc-check-input { position: absolute; top: 0; left: 0; width: 12px; height: 12px; margin: 0; opacity: 0; }
+.cc-check-box {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--cc-line);
+  background: var(--cc-surface);
+}
+.cc-check-x { position: absolute; inset: 0; width: 10px; height: 10px; overflow: visible; }
+.cc-check-x path { fill: none; stroke: var(--cc-line); stroke-width: 1; stroke-dasharray: 15; stroke-dashoffset: 15; }
+/* Checking draws the two strokes in steps; unchecking clears them at once. */
+.cc-check-box.is-checked .cc-check-x path { stroke-dashoffset: 0; transition: stroke-dashoffset 120ms steps(3, end); }
+.cc-check-box.is-checked .cc-check-x path + path { transition-delay: 60ms; }
+.cc-check-input:focus-visible + .cc-check-box { outline: 2px solid var(--cc-accent); outline-offset: 2px; }
+.cc-check.is-disabled { color: var(--cc-platinum-dk); }
+.cc-check.is-disabled .cc-check-box { border-color: var(--cc-platinum-dk); }
+
+/* ── ProgressBar ───────────────────────────────────────────────────── */
+/* A 1 px ink box that fills with coral; indeterminate shows a barber pole that steps sideways. */
+
+.cc-progressbar {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid var(--cc-line);
+  background: var(--cc-surface);
+}
+.cc-progressbar-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--cc-accent);
+  transform-origin: 0 50%;
+  transition: transform var(--cc-d2) linear;
+}
+.cc-progressbar-fill.is-live { transition: none; }
+/* 45° stripes repeat every 8 px across, 11.3137 px along the bar, so one period of travel loops seamlessly. */
+.cc-progressbar-pole {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -12px;
+  right: 0;
+  background: repeating-linear-gradient(-45deg, var(--cc-accent) 0 4px, var(--cc-surface) 4px 8px);
+  animation: cc-pole 480ms steps(4, end) infinite;
+}
+@keyframes cc-pole {
+  to { transform: translateX(11.3137px); }
+}
+
+/* ── Marquee ───────────────────────────────────────────────────────── */
+/* Marching ants: ink dashes over a light under-stroke, one pixel per 60 ms step. */
+
+.cc-marquee { position: absolute; z-index: 2; opacity: 0; pointer-events: none; }
+.cc-marquee.is-active { opacity: 1; }
+.cc-marquee-svg { position: absolute; inset: 0; overflow: visible; }
+.cc-marquee-base { fill: none; stroke: var(--cc-surface); stroke-width: 1; }
+.cc-marquee-ants { fill: none; stroke: var(--cc-line); stroke-width: 1; stroke-dasharray: 4 4; }
+.cc-marquee.is-active .cc-marquee-ants { animation: cc-ants 480ms steps(8, end) infinite; }
+@keyframes cc-ants {
+  to { stroke-dashoffset: -8; }
+}
+
+/* ── Keycap ────────────────────────────────────────────────────────── */
+
+.cc-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--cc-line);
+  border-bottom-width: 2px;
+  border-radius: calc(var(--cc-radius-btn) / 2);
+  background: var(--cc-platinum);
+  color: var(--cc-text);
+  font-family: var(--cc-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: 0.1em;
+}
+
+/* ── Spinner and Shimmer ───────────────────────────────────────────── */
+
+.cc-spinner { display: inline-flex; align-items: center; gap: 0.45em; }
+/* A 1em window over a strip of the ten frames; steps(10) shows one frame per 120 ms. */
+.cc-spinner-glyph {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+  color: var(--cc-accent);
+  font-variant-emoji: text;
+}
+.cc-spinner-strip { display: block; animation: cc-spin-frames 1.2s steps(10, end) infinite; }
+.cc-spinner-strip > span { display: block; height: 1em; line-height: 1em; text-align: center; }
+@keyframes cc-spin-frames {
+  to { transform: translateY(-100%); }
+}
+
+/* A highlight band sweeps left to right across the text every 2 s. */
+.cc-shimmer {
+  color: transparent;
+  background-image: linear-gradient(90deg, var(--cc-text-2) 0%, var(--cc-text-2) 40%, var(--cc-text) 50%, var(--cc-text-2) 60%, var(--cc-text-2) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: cc-shimmer 2s linear infinite;
+}
+@keyframes cc-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+@media (forced-colors: active) {
+  .cc-shimmer { background: none; color: CanvasText; }
+}
+
+/* ── StreamText ────────────────────────────────────────────────────── */
+
+.st-w { display: inline-block; }
+.st-end { white-space: nowrap; }
+/* The caret takes no width (negative right margin), so it never changes line breaks or centring. */
+.st-caret {
+  display: inline-block;
+  width: 0.34em;
+  height: 0.74em;
+  margin-left: 0.08em;
+  margin-right: -0.42em;
+  background: var(--cc-accent);
+  opacity: 0;
+}
+.st-caret.is-on { animation: cc-blink 1.05s linear infinite; }
+.st-caret.is-done { animation: cc-fade-out var(--cc-d2) ease forwards; }
+/* Two-state blink: on for the first half, off for the second. */
+@keyframes cc-blink {
+  0%, 49.9% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes cc-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── Counter ───────────────────────────────────────────────────────── */
+
+.cc-counter { font-variant-numeric: tabular-nums; }
+
+/* ── ToolCall ──────────────────────────────────────────────────────── */
+
+.tc { font-family: var(--cc-mono); font-size: 13px; line-height: 1.6; color: var(--cc-text); }
+.tc + .tc { margin-top: 10px; }
+.tc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.tc-row { cursor: pointer; }
+/* The ⏺ status dot: green when done, coral and blinking in steps while running, red on error. */
+.tc-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: calc((1.6em - 8px) / 2);
+  border-radius: 50%;
+  background: var(--cc-green);
+}
+.tc.is-running .tc-dot { background: var(--cc-accent); animation: cc-blink 1s linear infinite; }
+.tc.is-error .tc-dot { background: var(--cc-red); }
+.tc-call { min-width: 0; overflow-wrap: anywhere; }
+.tc-name { font-weight: 600; color: var(--cc-text); }
+.tc-args { color: var(--cc-text-2); }
+.tc-chev {
+  flex: none;
+  margin: calc((1.6em - 10px) / 2) 0 0 auto;
+  color: var(--cc-text-3);
+  transition: transform var(--cc-d2) var(--cc-ease);
+}
+button.tc-row:hover .tc-chev { color: var(--cc-text); }
+.tc.is-open .tc-chev { transform: rotate(90deg); }
+/* The result line hangs under the tool name after ⎿. */
+.tc-result { display: flex; gap: 8px; padding-left: 18px; color: var(--cc-text-2); white-space: nowrap; }
+.tc-elbow { flex: none; color: var(--cc-text-3); }
+.tc-result-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tc-detail { overflow: hidden; }
+.tc-detail-inner {
+  margin: 6px 0 2px 18px;
+  padding: 6px 0 6px 12px;
+  border-left: 1px solid var(--cc-line-soft);
+  color: var(--cc-text-2);
+  font-size: 12.5px;
+}
+
+/* ── TodoList ──────────────────────────────────────────────────────── */
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--cc-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.todo-item { display: flex; align-items: flex-start; gap: 10px; color: var(--cc-text-2); transition: color var(--cc-d2) ease; }
+.todo-item.is-current { color: var(--cc-text); }
+.todo-item.is-done { color: var(--cc-text-3); }
+.todo-box { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 1.5em; }
+.todo-label { min-width: 0; }
+.todo-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.todo-link:hover { color: var(--cc-text); }
+/* The strike line is a 1 px background that grows from 0% to 100% width, so it draws left to right and follows wrapped lines in order. */
+.todo-text {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 60% / 0% 1px;
+  transition: background-size var(--cc-d3) var(--cc-ease);
+}
+.todo-item.is-done .todo-text { background-size: 100% 1px; }
+
+/* ── Diff ──────────────────────────────────────────────────────────── */
+/* A card inside a window: 1 px ink border, platinum header strip, tinted add and remove lines. */
+
+.diff {
+  overflow: hidden;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-card);
+  background: var(--cc-surface);
+  box-shadow: var(--cc-shadow-pop);
+  font-family: var(--cc-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.diff-head {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--cc-line);
+  background: var(--cc-platinum);
+  color: var(--cc-text);
+  font-size: 12px;
+}
+.diff-plus { color: var(--cc-green); }
+.diff-minus { color: var(--cc-red); }
+.diff-body { padding: 6px 0; }
+.diff-line { display: grid; grid-template-columns: 4ch 2ch minmax(0, 1fr); padding-right: 12px; color: var(--cc-text-2); }
+.diff-num { padding-right: 1ch; text-align: right; color: var(--cc-text-3); user-select: none; }
+.diff-sign { text-align: center; user-select: none; }
+.diff-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff-line.is-add { background: var(--cc-green-soft); color: var(--cc-green); }
+.diff-line.is-del { background: var(--cc-red-soft); color: var(--cc-red); }
+.diff-line.is-add .diff-num,
+.diff-line.is-del .diff-num { color: inherit; opacity: 0.7; }
+
+/* ── Chapter ───────────────────────────────────────────────────────── */
+
+.ch { position: relative; padding: clamp(72px, 10vw, 128px) 0; scroll-margin-top: var(--cc-topbar); }
+.ch--band { background: var(--cc-bg-2); }
+.ch-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.ch-head { margin-bottom: clamp(32px, 4.5vw, 56px); }
+.ch-label { font-family: var(--cc-mono); font-size: 12px; line-height: 1.4; color: var(--cc-text-3); }
+.ch-title {
+  max-width: 24ch;
+  margin-top: 12px;
+  font-family: var(--cc-serif);
+  font-size: clamp(32px, 4.6vw, 54px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--cc-text);
+  text-wrap: balance;
+}
+.ch-title em { font-style: italic; }
+.ch-lead {
+  max-width: 62ch;
+  margin-top: 18px;
+  font-family: var(--cc-serif);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--cc-text-2);
+  text-wrap: pretty;
+}
+@media (width < 640px) {
+  .ch-wrap { padding: 0 16px; }
+}
+
+/* ── ScrollScene ───────────────────────────────────────────────────── */
+/* The section sets the scroll length and shows the desktop checker; the stage stays pinned under the menu bar while the section scrolls past. */
+
+.cc-scene { position: relative; height: var(--cc-scene-h, 260vh); background: var(--cc-desk); scroll-margin-top: var(--cc-topbar); }
+.cc-scene-stage {
+  position: sticky;
+  top: var(--cc-topbar);
+  height: calc(100vh - var(--cc-topbar));
+  height: calc(100svh - var(--cc-topbar));
+  overflow: hidden;
+}
+@media (width < 640px) {
+  .cc-scene { height: var(--cc-scene-h-sm, 150vh); }
+}
+.cc-scene.is-static { height: auto; }
+.cc-scene.is-static .cc-scene-stage { position: relative; top: auto; height: auto; overflow: visible; }
+
+/* ── ScrollProgress ────────────────────────────────────────────────── */
+
+.cc-scrollprogress {
+  position: fixed;
+  top: var(--cc-topbar);
+  left: 0;
+  right: 0;
+  z-index: 90;
+  height: 2px;
+  background: var(--cc-accent);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+@media (width >= 1200px) {
+  .cc-scrollprogress { display: none; }
+}
+
+/* ── Token ─────────────────────────────────────────────────────────── */
+/* The followed chat: a coral pill with a 1 px ink border and a 2 px hard shadow; the dot blinks in steps while active and turns green when done. */
+
+.cc-token {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 2px 11px 2px 9px;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-pill);
+  background: var(--cc-accent);
+  box-shadow: var(--cc-shadow-pop);
+  color: var(--cc-text);
+  font-family: var(--cc-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.cc-token--sm { gap: 6px; padding: 1px 9px 1px 7px; font-size: 11px; }
+.cc-token--lg { gap: 9px; padding: 5px 15px 5px 12px; font-size: 14px; }
+.cc-token-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--cc-text); }
+.cc-token--lg .cc-token-dot { width: 7px; height: 7px; }
+.cc-token.is-active .cc-token-dot { animation: cc-blink 1s linear infinite; }
+.cc-token.is-done .cc-token-dot { background: var(--cc-green); box-shadow: 0 0 0 1px var(--cc-surface); }
+/* The label slot clips while its width eases to the incoming label. */
+.cc-token-label { position: relative; display: inline-flex; min-width: 0; overflow: hidden; }
+.cc-token-track { position: relative; display: inline-flex; white-space: nowrap; }
+.cc-token-text { display: inline-block; }
+
+/* ── Stat ──────────────────────────────────────────────────────────── */
+
+.cc-stat { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.cc-stat-label { font-family: var(--cc-mono); font-size: 11px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cc-text-2); }
+.cc-stat-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.cc-stat-value {
+  display: inline-block;
+  font-family: var(--cc-serif);
+  font-size: clamp(40px, 5.4vw, 64px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--cc-text);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.cc-stat-unit { font-family: var(--cc-serif); font-size: 20px; color: var(--cc-text-2); }
+.cc-stat-none {
+  display: inline-flex;
+  align-items: center;
+  height: clamp(40px, 5.4vw, 64px);
+  padding: 0 16px;
+  border: 1px dashed var(--cc-line);
+  border-radius: var(--cc-radius-card);
+  font-family: var(--cc-mono);
+  font-size: 12px;
+  color: var(--cc-text-3);
+}
+.cc-stat-source { font-family: var(--cc-mono); font-size: 11px; line-height: 1.5; color: var(--cc-text-3); overflow-wrap: anywhere; }
+
+/* ── reduced motion ────────────────────────────────────────────────── */
+/* The components also check useReducedMotion; these rules cover CSS animation and the first paint before React runs. */
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-shimmer { animation: none; background: none; color: var(--cc-text-2); }
+  .cc-spinner-strip,
+  .tc.is-running .tc-dot,
+  .cc-token.is-active .cc-token-dot,
+  .st-caret,
+  .cc-marquee.is-active .cc-marquee-ants,
+  .cc-progressbar-pole { animation: none; }
+  .cc-scene { height: auto; }
+  .cc-scene-stage { position: relative; top: auto; height: auto; overflow: visible; }
+  .mw--pending { visibility: visible; }
+  .mw-zoomrect { display: none; }
+}

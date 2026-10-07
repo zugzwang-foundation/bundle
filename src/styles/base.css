@@ -43,20 +43,87 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── Classic Mac tokens (--cc-*) ──────────────────────────────────────
+   One light theme: a beige desktop, platinum chrome, ink outlines, hard offset shadows, and Claude's coral as the highlight colour.
+   The components in src/components/cc read these tokens and hardcode no colour, font, radius or shadow.
+   ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --cc-bg: #E9E3D3; /* the desktop (page) */
+  --cc-bg-2: #DED6C2; /* alternate bands, wells */
+  --cc-desk: repeating-conic-gradient(#E2DBC8 0% 25%, var(--cc-bg) 0% 50%) 0 0 / 2px 2px; /* 2 px checker behind the hero and pinned scenes; a full background shorthand value */
+  --cc-surface: #FCFAF4; /* window content, cards */
+
+  /* platinum chrome */
+  --cc-platinum: #DDDDDD; /* title bars, sidebars, buttons */
+  --cc-platinum-hi: #FFFFFF; /* bevel highlight on top and left edges */
+  --cc-platinum-lo: #999999; /* bevel shadow on bottom and right edges */
+  --cc-platinum-dk: #666666; /* inactive titles, disabled text on platinum */
+
+  /* ink and text */
+  --cc-text: #1A1A1A;
+  --cc-text-2: #4A4740;
+  --cc-text-3: #7A766C;
+  --cc-line: #1A1A1A; /* window, button and field outlines */
+  --cc-line-soft: rgba(26, 26, 26, 0.18); /* rules inside content */
+
+  /* coral highlight and status colours */
+  --cc-accent: #D97757;
+  --cc-accent-ink: #A8482A; /* coral text and links on beige or white */
+  --cc-accent-soft: rgba(217, 119, 87, 0.18);
+  --cc-select: #D97757; /* selected menu items and rows, with --cc-text on top */
+  --cc-green: #2F6B3F;
+  --cc-green-soft: rgba(47, 107, 63, 0.14);
+  --cc-red: #A33A2A;
+  --cc-red-soft: rgba(163, 58, 42, 0.12);
+
+  /* shadows and radii */
+  --cc-shadow-window: 4px 4px 0 0 var(--cc-line);
+  --cc-shadow-pop: 2px 2px 0 0 var(--cc-line); /* menus, cards, the token */
+  --cc-radius-window: 0; /* windows and menus are square */
+  --cc-radius-card: 2px;
+  --cc-radius-btn: 6px;
+  --cc-radius-pill: 999px;
+
+  /* type */
+  --cc-chrome: 'Pixelify Sans Variable', 'Silkscreen', monospace; /* menu bar, window titles, buttons, tabs, small labels; 14 to 16 px */
+  --cc-serif: 'EB Garamond Variable', Georgia, serif; /* headlines and reading prose */
+  --cc-mono: 'JetBrains Mono Variable', Monaco, ui-monospace, monospace; /* transcripts, code, captions, figure labels, keycaps */
+  --cc-sans: 'Inter Variable', Geneva, system-ui, sans-serif; /* dense UI text inside windows */
+
+  /* motion */
+  --cc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --cc-d1: 160ms; /* hover */
+  --cc-d2: 240ms; /* state change */
+  --cc-d3: 420ms; /* panels */
+  --cc-d4: 700ms; /* entrances */
+
+  --cc-topbar: 28px; /* height of the fixed menu bar; sticky stages and the scroll progress line sit under it */
+}
+
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--bone);
-  font-family: var(--font-sans);
+  background: var(--cc-bg);
+  color: var(--cc-text);
+  font-family: var(--cc-sans);
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* The product world (the cl- recreation of claude.ai) keeps the Archivo face it was built with, wherever it renders. */
+/* Zero specificity: any cl- rule that sets its own font still wins. */
+:where([class^="cl-"], [class*=" cl-"]) { font-family: var(--font-sans); }
+/* Dialogs and menus render outside .cl-app, so they take the product's text colour here instead of the page's. */
+:where(.cl-overlay, .cl-menu) { color: var(--cl-text); }
 
 #root { min-height: 100vh; }
 
@@ -65,10 +132,11 @@ button { font-family: inherit; cursor: pointer; }
 a { color: inherit; }
 input { font-family: inherit; }
 
-::selection { background: rgba(226, 185, 111, 0.28); color: #fff; }
+/* Classic inverse highlight, in coral. */
+::selection { background: var(--cc-select); color: var(--cc-text); }
 
 :focus-visible {
-  outline: 2px solid var(--spark);
+  outline: 2px solid var(--cc-accent);
   outline-offset: 2px;
   border-radius: 3px;
 }
