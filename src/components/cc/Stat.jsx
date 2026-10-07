@@ -7,7 +7,7 @@ function decimalsOf(value) {
 }
 
 /**
- * A big sourced number: a mono caps label above, the number in the serif counting up over 1.2 s with its unit beside it, and "source: …" below in mono.
+ * A big sourced number: a mono caps label above, the number in the display face counting up over 1.2 s with its unit beside it, and "source: …" below in mono.
  * Input: value (a number counts up with its own decimal places; a string renders as is), unit, source, label, notStated (shows a dashed box reading "not stated in the repo" in place of the number and unit).
  */
 export function Stat({ value, unit, source, label, notStated = false }) {

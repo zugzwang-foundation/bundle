@@ -43,56 +43,70 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Classic Mac tokens (--cc-*) ──────────────────────────────────────
-   One light theme: a beige desktop, platinum chrome, ink outlines, hard offset shadows, and Claude's coral as the highlight colour.
+/* ── macOS tokens (--cc-*) ─────────────────────────────────────────────
+   One light theme in the modern macOS style: a soft gradient wallpaper, translucent vibrancy bars, white rounded windows with large soft shadows, SF-style type, and Claude's coral as the accent colour.
    The components in src/components/cc read these tokens and hardcode no colour, font, radius or shadow.
    ──────────────────────────────────────────────────────────────────── */
 
 :root {
   color-scheme: light;
 
+  /* wallpaper: coral and peach light at the top left, lilac and sky blue at the bottom right, on warm off-white; a full background shorthand value */
+  --cc-wallpaper:
+    radial-gradient(58% 62% at 8% 6%, rgba(232, 162, 124, 0.9) 0%, rgba(232, 162, 124, 0) 70%),
+    radial-gradient(46% 50% at 30% 24%, rgba(243, 201, 168, 0.85) 0%, rgba(243, 201, 168, 0) 72%),
+    radial-gradient(58% 62% at 94% 96%, rgba(185, 167, 232, 0.9) 0%, rgba(185, 167, 232, 0) 70%),
+    radial-gradient(48% 52% at 70% 80%, rgba(143, 183, 240, 0.8) 0%, rgba(143, 183, 240, 0) 72%),
+    #F4E9E1;
+  --cc-desk: var(--cc-wallpaper); /* old name, kept so earlier references still render */
+
   /* surfaces */
-  --cc-bg: #E9E3D3; /* the desktop (page) */
-  --cc-bg-2: #DED6C2; /* alternate bands, wells */
-  --cc-desk: repeating-conic-gradient(#E2DBC8 0% 25%, var(--cc-bg) 0% 50%) 0 0 / 2px 2px; /* 2 px checker behind the hero and pinned scenes; a full background shorthand value */
-  --cc-surface: #FCFAF4; /* window content, cards */
+  --cc-bg: #F5F5F7; /* the page */
+  --cc-bg-2: #ECECEF; /* alternate bands, wells */
+  --cc-surface: #FFFFFF; /* window content, cards */
+  --cc-surface-2: #F6F6F6; /* sidebars, header strips */
+  --cc-vibrancy: rgba(246, 246, 246, 0.72); /* title bars, toolbars, the menu bar and menus; pair with --cc-vibrancy-filter */
+  --cc-vibrancy-filter: blur(30px) saturate(1.8); /* a backdrop-filter value */
 
-  /* platinum chrome */
-  --cc-platinum: #DDDDDD; /* title bars, sidebars, buttons */
-  --cc-platinum-hi: #FFFFFF; /* bevel highlight on top and left edges */
-  --cc-platinum-lo: #999999; /* bevel shadow on bottom and right edges */
-  --cc-platinum-dk: #666666; /* inactive titles, disabled text on platinum */
+  /* old platinum names, mapped to the macOS greys so earlier references still render */
+  --cc-platinum: var(--cc-surface-2);
+  --cc-platinum-hi: #FFFFFF;
+  --cc-platinum-lo: #C7C7CC;
+  --cc-platinum-dk: var(--cc-text-3);
 
-  /* ink and text */
-  --cc-text: #1A1A1A;
-  --cc-text-2: #4A4740;
-  --cc-text-3: #7A766C;
-  --cc-line: #1A1A1A; /* window, button and field outlines */
-  --cc-line-soft: rgba(26, 26, 26, 0.18); /* rules inside content */
+  /* text and lines */
+  --cc-text: #1D1D1F;
+  --cc-text-2: #6E6E73;
+  --cc-text-3: #8E8E93;
+  --cc-line: rgba(0, 0, 0, 0.10); /* window, card and field hairlines */
+  --cc-line-soft: rgba(0, 0, 0, 0.06); /* rules inside content */
 
-  /* coral highlight and status colours */
+  /* coral accent and status colours */
   --cc-accent: #D97757;
-  --cc-accent-ink: #A8482A; /* coral text and links on beige or white */
-  --cc-accent-soft: rgba(217, 119, 87, 0.18);
-  --cc-select: #D97757; /* selected menu items and rows, with --cc-text on top */
-  --cc-green: #2F6B3F;
-  --cc-green-soft: rgba(47, 107, 63, 0.14);
-  --cc-red: #A33A2A;
-  --cc-red-soft: rgba(163, 58, 42, 0.12);
+  --cc-accent-ink: #B5552F; /* coral text and links on white */
+  --cc-accent-soft: rgba(217, 119, 87, 0.14);
+  --cc-select: rgba(217, 119, 87, 0.16); /* selected rows and text selection */
+  --cc-focus: rgba(217, 119, 87, 0.5); /* keyboard focus ring */
+  --cc-green: #28A745;
+  --cc-green-soft: rgba(40, 167, 69, 0.12);
+  --cc-red: #E5484D;
+  --cc-red-soft: rgba(229, 72, 77, 0.12);
 
   /* shadows and radii */
-  --cc-shadow-window: 4px 4px 0 0 var(--cc-line);
-  --cc-shadow-pop: 2px 2px 0 0 var(--cc-line); /* menus, cards, the token */
-  --cc-radius-window: 0; /* windows and menus are square */
-  --cc-radius-card: 2px;
+  --cc-shadow-window: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.05), 0 24px 60px -12px rgba(0, 0, 0, 0.28), 0 60px 120px -40px rgba(0, 0, 0, 0.30);
+  --cc-shadow-window-inactive: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04), 0 14px 34px -12px rgba(0, 0, 0, 0.18);
+  --cc-shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 10px 30px -8px rgba(0, 0, 0, 0.25); /* menus, cards, popovers */
+  --cc-radius-window: 14px;
+  --cc-radius-card: 10px;
   --cc-radius-btn: 6px;
   --cc-radius-pill: 999px;
 
   /* type */
-  --cc-chrome: 'Pixelify Sans Variable', 'Silkscreen', monospace; /* menu bar, window titles, buttons, tabs, small labels; 14 to 16 px */
-  --cc-serif: 'EB Garamond Variable', Georgia, serif; /* headlines and reading prose */
-  --cc-mono: 'JetBrains Mono Variable', Monaco, ui-monospace, monospace; /* transcripts, code, captions, figure labels, keycaps */
-  --cc-sans: 'Inter Variable', Geneva, system-ui, sans-serif; /* dense UI text inside windows */
+  --cc-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter Variable', system-ui, sans-serif; /* UI and reading text */
+  --cc-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', system-ui, sans-serif; /* headlines: weight 700, letter-spacing -0.022em */
+  --cc-mono: ui-monospace, 'SF Mono', 'JetBrains Mono Variable', Menlo, monospace; /* transcripts, code, paths, figure labels */
+  --cc-chrome: var(--cc-sans); /* old name for the chrome face */
+  --cc-serif: var(--cc-sans); /* old name for the reading face */
 
   /* motion */
   --cc-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -101,7 +115,7 @@
   --cc-d3: 420ms; /* panels */
   --cc-d4: 700ms; /* entrances */
 
-  --cc-topbar: 28px; /* height of the fixed menu bar; sticky stages and the scroll progress line sit under it */
+  --cc-topbar: 26px; /* height of the fixed menu bar; sticky stages and the scroll progress line sit under it */
 }
 
 * { box-sizing: border-box; }
@@ -132,13 +146,13 @@ button { font-family: inherit; cursor: pointer; }
 a { color: inherit; }
 input { font-family: inherit; }
 
-/* Classic inverse highlight, in coral. */
-::selection { background: var(--cc-select); color: var(--cc-text); }
+/* Text selection in the coral accent. */
+::selection { background: var(--cc-select); color: inherit; }
 
 :focus-visible {
-  outline: 2px solid var(--cc-accent);
-  outline-offset: 2px;
-  border-radius: 3px;
+  outline: 3px solid var(--cc-focus);
+  outline-offset: 1px;
+  border-radius: 4px;
 }
 
 /* mono utility voice — running heads, eyebrows, figure captions */

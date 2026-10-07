@@ -65,7 +65,7 @@ function ShadeDemo() {
   const [shaded, setShaded] = useState(false);
   const [checked, setChecked] = useState(true);
   return (
-    <MacWindow title="Windowshade" shaded={shaded} onMinimize={() => setShaded((s) => !s)} onClose={() => {}} toolbar={<Keycap>⌘W</Keycap>} leading="2 items">
+    <MacWindow title="Shaded" shaded={shaded} onMinimize={() => setShaded((s) => !s)} onClose={() => {}} toolbar={<Keycap>⌘W</Keycap>} leading="2 items">
       <div style={{ padding: 16, display: 'grid', gap: 12 }}>
         <Checkbox checked={checked} onChange={setChecked} label="Bundle chats" />
         <Checkbox checked label="Read-only checked" />
@@ -104,7 +104,7 @@ export function CcGallery() {
             <span>Press <Keycap>B</Keycap> or <Keycap>⌘K</Keycap></span>
             <PushButton>Cancel</PushButton>
             <PushButton isDefault>Hide bundle</PushButton>
-            <span ref={iconRef} className="cc-label" style={{ border: '1px dotted var(--cc-line)', padding: '2px 6px' }}>zoom origin</span>
+            <span ref={iconRef} className="cc-label" style={{ border: '1px dashed var(--cc-line)', borderRadius: 4, padding: '2px 6px' }}>origin</span>
           </div>
 
           <MacWindow title="Claude Code" origin={iconRef}>
@@ -149,7 +149,7 @@ export function CcGallery() {
             </MacWindow>
           </div>
 
-          <div style={{ position: 'relative', padding: 24, background: 'var(--cc-desk)', border: '1px solid var(--cc-line)' }}>
+          <div style={{ position: 'relative', padding: 24, background: 'var(--cc-wallpaper)', borderRadius: 'var(--cc-radius-card)' }}>
             <TokenDemo />
             <Marquee x={12} y={12} w={260} h={44} />
           </div>
@@ -161,7 +161,7 @@ export function CcGallery() {
           </div>
 
           <Reveal>
-            <p style={{ fontFamily: 'var(--cc-serif)', fontSize: 20 }}>
+            <p style={{ fontFamily: 'var(--cc-sans)', fontSize: 19 }}>
               <StreamText text="Streamed text lands word by word." /> Counter: <Counter to={1284} />
             </p>
           </Reveal>

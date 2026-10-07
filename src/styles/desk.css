@@ -1,0 +1,132 @@
+/* Landing desktop: wallpaper, pinned stage, the Claude window, flying window slots, phone sheets, the reduced-motion column, the footer window, and the window body classes (.dk-*) that every chapter uses. */
+
+/* ---- Page and wallpaper ---- */
+.dk-page { position: relative; min-height: 100vh; overflow-x: clip; background: #F4E9E1; color: var(--cc-text); font-family: var(--cc-sans); }
+.dk-wallpaper { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--cc-wallpaper); pointer-events: none; }
+/* The gradient blobs drift on a copy of the wallpaper: transform only, 40 s each way. */
+.dk-wallpaper::before { content: ''; position: absolute; inset: -12%; background: var(--cc-wallpaper); animation: dk-drift 40s ease-in-out infinite alternate; will-change: transform; }
+@keyframes dk-drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1.02) rotate(0deg); }
+  to { transform: translate3d(3%, 2.5%, 0) scale(1.1) rotate(3deg); }
+}
+.dk-menubar .cc-menubar-item:nth-child(2) .cc-menubar-title { font-weight: 700; }
+.dk-area { position: relative; z-index: 1; }
+
+/* ---- Scroll section and pinned stage ---- */
+/* No ancestor of .dk-stage may set overflow hidden or auto, or the stage stops pinning; overflow: clip is safe. */
+.dk-scroll { position: relative; }
+.dk-anchor { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
+.dk-stage {
+  --dk-mw: min(1040px, 92vw);
+  --dk-mh: min(660px, 72vh);
+  --dk-sh: calc(100vh - var(--cc-topbar));
+  --dk-ml: calc((100vw - var(--dk-mw)) / 2); /* space beside the Claude window */
+  --dk-mt: calc((var(--dk-sh) - var(--dk-mh)) / 2); /* space above and below the Claude window */
+  --dk-side: calc((100vw - var(--dk-mw) * 0.5) / 2 - 16px); /* widest a side window can be and still leave the middle half of the Claude window clear */
+  position: sticky;
+  top: var(--cc-topbar);
+  height: var(--dk-sh);
+  overflow: clip;
+}
+
+/* The Claude window, centred. */
+.dk-main { position: absolute; inset: 0; z-index: 1; width: var(--dk-mw); height: var(--dk-mh); margin: auto; }
+.dk-main-win { width: 100%; height: 100%; display: flex; flex-direction: column; }
+.dk-main-win .mw-pane { flex: 1 1 auto; min-height: 0; }
+.dk-main-body { flex: 1 1 auto; min-height: 0; height: 100%; padding: 0; overflow: hidden; }
+
+/* ---- Flying window slots (desktop) ---- */
+.dk-slot { position: absolute; pointer-events: none; }
+.dk-slot.is-on { pointer-events: auto; }
+.dk-fly { will-change: transform, opacity; }
+.dk-focus { transform-origin: 50% 50%; transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+.dk-focus.is-dim { transform: scale(0.92); }
+.dk-focus.is-dim .mw { box-shadow: var(--cc-shadow-window-inactive, var(--cc-shadow-pop)); }
+
+@media (min-width: 760px) {
+  .dk-slot { width: min(var(--w), var(--dk-side)); }
+  /* Side columns: the window overlaps the Claude window's edge by up to 60 px, or more when the screen is narrow, never past the middle half. */
+  .dk-slot--tl, .dk-slot--l, .dk-slot--bl { left: max(16px, calc(var(--dk-ml) - var(--w) + 60px)); }
+  .dk-slot--tr, .dk-slot--r, .dk-slot--br { right: max(16px, calc(var(--dk-ml) - var(--w) + 60px)); }
+  .dk-slot--tl, .dk-slot--tr { top: max(12px, calc(var(--dk-mt) - 36px)); }
+  .dk-slot--bl, .dk-slot--br { bottom: max(12px, calc(var(--dk-mt) - 36px)); }
+  .dk-slot--l, .dk-slot--r { top: 50%; transform: translateY(-50%); }
+  /* Centre slots hang over the top or bottom edge of the Claude window. */
+  .dk-slot--t, .dk-slot--b { left: 50%; width: min(var(--w), calc(100vw - 32px)); transform: translateX(-50%); }
+  .dk-slot--t { top: max(10px, calc(var(--dk-mt) - 70px)); }
+  .dk-slot--b { bottom: max(10px, calc(var(--dk-mt) - 70px)); }
+}
+
+/* ---- Phone: the Claude window at the top, chapter windows as bottom sheets ---- */
+@media (max-width: 759px) {
+  .dk-stage { --dk-mw: calc(100vw - 32px); --dk-mh: 54vh; --dk-mh: 54svh; height: calc(100svh - var(--cc-topbar)); }
+  .dk-main { inset: 12px 16px auto; width: auto; margin: 0; }
+  .dk-slot { left: 16px; right: 16px; bottom: 12px; }
+  .dk-slot .mw { border-radius: 16px; }
+  .dk-slot .dk-content { max-height: 38svh; overflow: auto; overscroll-behavior: contain; }
+  .dk-focus.is-dim { transform: none; }
+}
+
+/* ---- Reduced motion: one static column ---- */
+.dk-static { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: calc(var(--cc-topbar) + 24px) 0 0; display: grid; gap: 24px; }
+.dk-main--static { position: relative; inset: auto; width: 100%; height: min(660px, 80vh); margin: 0; }
+.dk-static-chapter { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.dk-static-win { width: min(var(--w), 100%); }
+.dk-static .dk-footer { padding-top: 24px; }
+
+/* ---- Window bodies ---- */
+.dk-win .mw-body { padding: 0; }
+.dk-content { padding: 16px 18px 18px; font-family: var(--cc-sans); color: var(--cc-text); text-align: left; }
+.dk-content > :last-child { margin-bottom: 0; }
+.dk-content--light { background: var(--cc-surface); }
+.dk-content--dark { background: #2A2A2C; color: #F5F5F7; }
+.dk-content--terminal { background: #1E1E1E; color: #E5E5E5; font-family: var(--cc-mono); }
+.dk-content--dark .dk-small, .dk-content--terminal .dk-small { color: #A1A1A6; }
+.dk-content--dark .dk-label, .dk-content--terminal .dk-label { color: #A1A1A6; }
+.dk-content--dark .dk-list > li, .dk-content--terminal .dk-list > li { border-top-color: rgba(255, 255, 255, 0.12); }
+
+.dk-label { margin: 0 0 8px; font: 600 11px/1.3 var(--cc-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cc-text-2); }
+.dk-h { margin: 0 0 10px; font-family: var(--cc-display); font-size: clamp(28px, 2.3vw, 36px); font-weight: 700; line-height: 1.1; letter-spacing: -0.022em; text-wrap: balance; }
+.dk-h--hero { font-size: clamp(40px, 4vw, 56px); line-height: 1; }
+.dk-p { margin: 0 0 10px; font-size: 15px; line-height: 1.5; }
+.dk-small { margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: var(--cc-text-2); }
+.dk-small-inline { font-size: 13px; color: var(--cc-text-2); }
+.dk-list { margin: 0 0 10px; padding: 0; list-style: none; font-size: 14px; line-height: 1.45; }
+.dk-list > li { padding: 8px 0; border-top: 0.5px solid var(--cc-line); }
+.dk-list > li:first-child { border-top: 0; padding-top: 2px; }
+.dk-list--num > li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.dk-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--cc-accent); color: #fff; font: 600 11px/1 var(--cc-mono); }
+.dk-date { display: inline-block; min-width: 52px; font: 12px var(--cc-mono); color: var(--cc-text-2); }
+.dk-demo { margin: 4px 0 10px; padding: 8px 10px; border-radius: var(--cc-radius-btn); background: var(--cc-bg-2); font-size: 13px; }
+.dk-dim { color: var(--cc-text-3); }
+.dk-undo { margin-left: 6px; color: var(--cc-accent-ink); font-weight: 600; }
+.dk-stat { margin: 4px 0 2px; font-family: var(--cc-display); font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.dk-unit { margin-left: 4px; font-size: 15px; font-weight: 500; color: var(--cc-text-2); letter-spacing: 0; }
+.dk-src { display: block; margin-top: 6px; font: 11px/1.4 var(--cc-mono); color: var(--cc-text-3); }
+.dk-term { margin: 0; padding: 14px 16px; border-radius: 8px; background: #1E1E1E; color: #E5E5E5; font: 13px/1.55 var(--cc-mono); white-space: pre-wrap; }
+.dk-term .dk-prompt { color: #32D74B; }
+.dk-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+/* ---- Footer window ---- */
+.dk-footer { position: relative; z-index: 1; width: min(720px, calc(100% - 32px)); margin: 0 auto; padding: 18vh 0 64px; }
+.dk-footer-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; font-size: 13px; }
+.dk-footer-org { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.dk-footer-doc { margin-left: auto; font: 11px var(--cc-mono); color: var(--cc-text-2); }
+.dk-footer a { color: var(--cc-accent-ink); }
+.dk-footer-copy { margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-wallpaper::before { animation: none; }
+  .dk-focus { transition: none; }
+}
+
+/* ---- Mission Control (finale chapter, desktop only) ---- */
+.dk-mc { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.dk-mc-tile { position: absolute; transform: translate(-50%, -50%); }
+.dk-mc-fly { display: flex; flex-direction: column; align-items: center; gap: 6px; will-change: transform, opacity; }
+/* A 380 x 240 window shown at 0.32 scale: the thumb box holds the scaled size so the label sits right under it. */
+.dk-mc-thumb { position: relative; width: calc(380px * 0.32); height: calc(240px * 0.32); }
+.dk-mc-win { position: absolute; top: 0; left: 0; width: 380px; height: 240px; transform: scale(0.32); transform-origin: 0 0; }
+.dk-mc-h { margin: 6px 0 0; font-family: var(--cc-display); font-size: 34px; font-weight: 700; line-height: 1.1; letter-spacing: -0.022em; }
+.dk-mc-label { max-width: 150px; margin: 0; overflow: hidden; font-size: 11px; font-weight: 600; color: var(--cc-text); text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 759px) { .dk-mc { display: none; } }

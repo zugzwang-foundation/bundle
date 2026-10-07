@@ -1,0 +1,129 @@
+/* Window bodies for chapters 05 to 11 (src/components/desk/chapters-b.jsx). Shared body classes (.dk-label, .dk-h, .dk-p, .dk-small, .dk-list, .dk-stat, .dk-term, .dk-cta) are styled in desk.css; these rules use the dkb- prefix. */
+
+.dkb-gap { margin-top: 12px; }
+.dkb-accent { color: var(--cc-accent-ink); }
+
+/* 05 invariants: rule title and the failure it prevents */
+.dkb-rule-h {
+  margin: 0 0 6px;
+  font-family: var(--cc-display);
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+  color: var(--cc-text);
+}
+.dkb-prevents {
+  display: grid;
+  gap: 2px;
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: var(--cc-radius-card);
+  background: var(--cc-accent-soft);
+}
+.dkb-prevents-k {
+  font-family: var(--cc-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cc-accent-ink);
+}
+
+/* 06 states: a verbatim copy-register string, sample rows, a button row */
+.dkb-quote {
+  margin: 8px 0;
+  padding: 9px 11px;
+  border-radius: var(--cc-radius-card);
+  background: var(--cc-surface-2);
+  box-shadow: inset 0 0 0 0.5px var(--cc-line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cc-text);
+}
+.dkb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  border-bottom: 0.5px solid var(--cc-line-soft);
+  font-size: 13px;
+  color: var(--cc-text);
+}
+.dkb-row-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dkb-row-d { font-family: var(--cc-mono); font-size: 11px; color: var(--cc-text-3); }
+.dkb-row--strong .dkb-row-t { flex: none; font-weight: 600; }
+.dkb-row-n { font-family: var(--cc-mono); font-size: 11px; color: var(--cc-text-2); }
+.dkb-row--strong svg { color: var(--cc-accent); }
+.dkb-btnrow { display: flex; gap: 8px; margin: 4px 0 8px; }
+
+/* 07 sensitive: gate rows and the R1 to R5 list */
+.dkb-calls { display: grid; gap: 6px; font-family: var(--cc-mono); font-size: 12.5px; }
+.dkb-calls .tc-result { white-space: normal; }
+.dkb-calls .tc-result-text { overflow: visible; }
+.dkb-pending { color: var(--cc-text-3); opacity: 0.55; }
+.dkb-rules { margin: 0; padding: 0; list-style: none; }
+.dkb-rule {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--cc-text-2);
+}
+.dkb-rule b { color: var(--cc-text); font-weight: 600; }
+.dkb-rule-n { font-family: var(--cc-mono); font-size: 11px; padding-top: 2px; color: var(--cc-accent-ink); }
+
+/* 09 engine: the typed terminal, the followed token, the thresholds */
+.dkb-term { display: grid; gap: 1px; font-family: var(--cc-mono); font-size: 12.5px; line-height: 1.55; }
+.dkb-tl { white-space: pre-wrap; overflow-wrap: anywhere; color: #E6E6E6; }
+.dkb-tl.is-head { color: #D97757; margin-bottom: 6px; }
+.dkb-tl.is-result { color: #9A9A9A; }
+.dkb-tl.is-call .dkb-ch:first-child { color: #3FB950; }
+.dkb-step + .dkb-step { margin-top: 3px; }
+.dkb-ch { opacity: clamp(0, calc(var(--typed, 0) - var(--i)), 1); }
+.dkb-tl.is-prompt { margin-top: 8px; }
+.dkb-prompt { color: #3FB950; }
+.dkb-caret {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  vertical-align: -2px;
+  background: #E6E6E6;
+  animation: dkb-caret 1s steps(1, end) infinite;
+}
+@keyframes dkb-caret { 50% { opacity: 0; } }
+
+.dkb-follow { display: grid; gap: 8px; }
+.dkb-follow .dk-p,
+.dkb-follow .dk-label,
+.dkb-follow .dk-small { margin: 0; }
+.dkb-token { min-height: 34px; display: flex; align-items: center; }
+
+.dkb-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.dkb-stat { min-width: 0; }
+.dkb-stat .dk-label,
+.dkb-stat .dk-stat,
+.dkb-stat .dk-unit,
+.dkb-stat .dk-src { margin: 0; }
+.dkb-stat .dk-src { overflow-wrap: anywhere; }
+
+/* 10 scope: the out-of-scope list */
+.dkb-xlist { margin: 0; padding: 0; list-style: none; }
+.dkb-xlist li { display: flex; gap: 10px; padding: 7px 0; font-size: 14px; line-height: 1.4; color: var(--cc-text); }
+.dkb-x { flex: none; width: 14px; color: var(--cc-red); font-weight: 600; text-align: center; }
+
+/* 11 journeys: the checklist caption and the closing window */
+.dkb-todo { margin: 0; }
+.dkb-jid { font-family: var(--cc-mono); font-size: 11px; color: var(--cc-accent-ink); }
+.dkb-cta-h { margin-bottom: 14px; }
+
+@media (max-width: 640px) {
+  .dkb-stats { grid-template-columns: 1fr; gap: 10px; }
+  .dkb-rule-h { font-size: 16px; }
+  .dkb-term { font-size: 11.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dkb-caret { animation: none; }
+}

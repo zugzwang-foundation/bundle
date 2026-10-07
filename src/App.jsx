@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Landing from './pages/Landing';
-import Prototype from './pages/Prototype';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -15,7 +14,6 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/prototype" element={<Prototype />} />
         <Route path="*" element={<Landing />} />
       </Routes>
     </>

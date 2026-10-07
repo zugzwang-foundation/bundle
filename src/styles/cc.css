@@ -1,6 +1,6 @@
 /* ────────────────────────────────────────────────────────────────────
-   Classic Mac primitives (src/components/cc). Colours, fonts, radii, shadows and motion come from the --cc-* tokens in base.css.
-   Sections: utilities · MacWindow (frame, title bar, boxes, toolbar strip, body, scroll bars, windowshade, zoom rects, utility variant) · MenuBar · PushButton · Checkbox · ProgressBar · Marquee · Keycap · Spinner and Shimmer · StreamText · Counter · ToolCall · TodoList · Diff · Chapter · ScrollScene · ScrollProgress · Token · Stat · reduced motion.
+   macOS primitives (src/components/cc). Colours, fonts, radii, shadows and motion come from the --cc-* tokens in base.css.
+   Sections: utilities · MacWindow (frame, title bar, traffic lights, unified toolbar, body, dark tone, scroll bars, shaded, utility variant) · MenuBar · PushButton · Checkbox · ProgressBar · Marquee · Keycap · Spinner and Shimmer · StreamText · Counter · ToolCall · TodoList · Diff · Chapter · ScrollScene · ScrollProgress · Token · Stat · reduced motion.
    ──────────────────────────────────────────────────────────────────── */
 
 /* ── utilities ─────────────────────────────────────────────────────── */
@@ -27,130 +27,115 @@
 }
 
 /* ── MacWindow · frame ─────────────────────────────────────────────── */
-/* Square corners, a 1 px ink outline and a hard offset shadow. */
+/* 14 px rounded corners, a hairline edge and a large soft shadow (both in --cc-shadow-window); children clip to the corners. */
 
 .mw {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--cc-line);
+  overflow: clip;
   border-radius: var(--cc-radius-window);
   background: var(--cc-surface);
   color: var(--cc-text);
   box-shadow: var(--cc-shadow-window);
 }
-/* Hidden until the zoom rects finish; the layout space is kept. */
-.mw--pending { visibility: hidden; }
+.mw--inactive { box-shadow: var(--cc-shadow-window-inactive); }
 
 /* ── MacWindow · title bar ─────────────────────────────────────────── */
-/* 22 px platinum bar over a 1 px ink rule; six pinstripes when active, interrupted by platinum plates behind the boxes and the title. */
+/* 28 px translucent bar with a hairline under it: traffic lights 12 px from the left, the title centred. */
 
 .mw-titlebar {
   position: relative;
+  z-index: 1;
   flex: none;
   display: flex;
   align-items: center;
-  height: 23px;
-  padding: 0 4px;
-  border-bottom: 1px solid var(--cc-line);
-  background: var(--cc-platinum);
-  font-family: var(--cc-chrome);
+  height: 28px;
+  padding: 0 12px;
+  border-bottom: 0.5px solid var(--cc-line);
+  background: var(--cc-vibrancy);
+  -webkit-backdrop-filter: var(--cc-vibrancy-filter);
+  backdrop-filter: var(--cc-vibrancy-filter);
+  font-family: var(--cc-sans);
   user-select: none;
 }
-/* Six 1 px ink lines on a 2 px pitch. */
-.mw-titlebar::before {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 2px;
-  right: 2px;
-  height: 11px;
-  background: repeating-linear-gradient(to bottom, var(--cc-line) 0 1px, transparent 1px 2px);
-}
-.mw--inactive .mw-titlebar::before { display: none; }
-
-.mw-plate {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 100%;
-  padding: 0 3px;
-  background: var(--cc-platinum);
-}
-.mw-plate--start { margin-left: 4px; }
-.mw-plate--end { margin-left: auto; margin-right: 4px; }
 
 .mw-title {
   position: absolute;
   top: 0;
   left: 50%;
   display: block;
-  max-width: calc(100% - 96px);
-  padding: 0 8px;
+  max-width: calc(100% - 152px);
   overflow: hidden;
   transform: translateX(-50%);
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--cc-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.003em;
+  color: var(--cc-text-2);
 }
-.mw--inactive .mw-title { color: var(--cc-platinum-dk); }
+.mw--inactive .mw-title { color: var(--cc-text-3); opacity: 0.7; }
 
-/* ── MacWindow · boxes ─────────────────────────────────────────────── */
-/* 11 px close, zoom and windowshade boxes: 1 px ink border with a bevel inside. */
+/* ── MacWindow · traffic lights ────────────────────────────────────── */
+/* 12 px circles 8 px apart: close #FF5F57, minimise #FEBC2E, zoom #28C840. Hovering the row shows ×, − and the zoom glyph at 60% black. */
 
-.mw-box {
+.mw-lights { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; }
+.mw-light {
+  --light: #D1D1D6;
+  --light-edge: rgba(0, 0, 0, 0.12);
   flex: none;
   display: grid;
   place-items: center;
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--cc-line);
-  border-radius: 0;
-  background: var(--cc-platinum);
-  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
-  color: var(--cc-line);
+  border: 0.5px solid var(--light-edge);
+  border-radius: 50%;
+  background: var(--light);
+  color: rgba(0, 0, 0, 0.6);
   cursor: default;
 }
-button.mw-box { cursor: pointer; }
-.mw-box svg { display: block; width: 9px; height: 9px; }
-/* The close box shows its X burst only while hovered, pressed or focused. */
-.mw-box--close svg { visibility: hidden; }
-.mw-box--close:hover svg,
-.mw-box--close:active svg,
-.mw-box--close:focus-visible svg { visibility: visible; }
-.mw-box:active { background: var(--cc-platinum-lo); box-shadow: inset 1px 1px 0 var(--cc-platinum-dk); }
-.mw--inactive .mw-box:not(button) { visibility: hidden; }
+.mw-light--close { --light: #FF5F57; --light-edge: #E0443E; }
+.mw-light--minimize { --light: #FEBC2E; --light-edge: #DEA123; }
+.mw-light--zoom { --light: #28C840; --light-edge: #1AAB29; }
+button.mw-light { cursor: pointer; }
+.mw-light svg { display: block; width: 8px; height: 8px; opacity: 0; }
+.mw-lights:hover .mw-light svg,
+.mw-light:focus-visible svg { opacity: 1; }
+.mw-light:active { filter: brightness(0.86); }
+.mw-light:focus-visible { outline: 2px solid var(--cc-focus); outline-offset: 1px; }
+/* Inactive windows grey the lights until the row is hovered, as macOS does. */
+.mw--inactive .mw-lights:not(:hover) .mw-light,
+.mw-lights.is-off:not(:hover) .mw-light { background: #D1D1D6; border-color: rgba(0, 0, 0, 0.12); }
 
-/* The three boxes in one row (TrafficLights). */
-.mw-boxes { display: inline-flex; align-items: center; gap: 4px; }
-.mw-boxes.is-off .mw-box:not(button) { visibility: hidden; }
+/* ── MacWindow · unified toolbar ───────────────────────────────────── */
+/* A 38 px translucent strip that continues the title bar: leading at the left, toolbar at the right, one hairline under both. */
 
-/* ── MacWindow · toolbar strip ─────────────────────────────────────── */
-/* A 28 px platinum strip with bevels under the title bar: leading at the left, toolbar at the right. */
-
+.mw--toolbar .mw-titlebar { border-bottom: 0; }
 .mw-toolbar {
+  position: relative;
+  z-index: 1;
   flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 28px;
-  padding: 2px 8px;
-  border-bottom: 1px solid var(--cc-line);
-  background: var(--cc-platinum);
-  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  min-height: 38px;
+  padding: 4px 12px;
+  border-bottom: 0.5px solid var(--cc-line);
+  background: var(--cc-vibrancy);
+  -webkit-backdrop-filter: var(--cc-vibrancy-filter);
+  backdrop-filter: var(--cc-vibrancy-filter);
   color: var(--cc-text);
-  font-family: var(--cc-chrome);
-  font-size: 14px;
+  font-family: var(--cc-sans);
+  font-size: 13px;
 }
 .mw-leading,
-.mw-tools { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mw-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mw-leading { font-weight: 600; }
 .mw-tools { margin-left: auto; }
 
 /* ── MacWindow · body ──────────────────────────────────────────────── */
@@ -165,82 +150,55 @@ button.mw-box { cursor: pointer; }
   background: var(--cc-surface);
   color: var(--cc-text);
 }
-/* tone="dark": the dark product app fills the body edge to edge; the chrome stays platinum. */
+
+/* ── MacWindow · dark tone ─────────────────────────────────────────── */
+/* tone="dark": a dark title bar and a dark body that the claude.ai app (.cl-app) fills edge to edge. */
+
+.mw--dark { background: var(--cl-bg); color: var(--cl-text); }
+.mw--dark .mw-titlebar,
+.mw--dark .mw-toolbar { border-bottom-color: rgba(0, 0, 0, 0.5); background: #2C2B29; -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--cl-text); }
+.mw--dark .mw-title { color: rgba(255, 255, 255, 0.82); }
+.mw--dark.mw--inactive .mw-title { color: rgba(255, 255, 255, 0.4); opacity: 1; }
+.mw--dark.mw--inactive .mw-lights:not(:hover) .mw-light { background: #4A4946; border-color: rgba(0, 0, 0, 0.3); }
 .mw--dark .mw-body { background: var(--cl-bg); color: var(--cl-text); }
 
 /* ── MacWindow · scroll bars ───────────────────────────────────────── */
-/* scroll prop: a platinum track with a 50% grey dither, square arrow buttons and a platinum thumb (Chrome and Safari; Firefox gets platinum colours). */
+/* scroll prop: thin rounded overlay-style thumbs on a clear track. */
 
 .mw-body--scroll { overflow: auto; overscroll-behavior: contain; }
 @supports selector(::-webkit-scrollbar) {
   /* A non-auto scrollbar-color or scrollbar-width, inherited or not, would switch the webkit styles off. */
   .mw-body--scroll { scrollbar-color: auto; scrollbar-width: auto; }
-  .mw-body--scroll::-webkit-scrollbar { width: 16px; height: 16px; background: var(--cc-platinum); }
-  .mw-body--scroll::-webkit-scrollbar-track { background: repeating-conic-gradient(var(--cc-platinum-lo) 0% 25%, var(--cc-platinum) 0% 50%) 0 0 / 2px 2px; }
-  .mw-body--scroll::-webkit-scrollbar-track:vertical { border-left: 1px solid var(--cc-line); }
-  .mw-body--scroll::-webkit-scrollbar-track:horizontal { border-top: 1px solid var(--cc-line); }
-  .mw-body--scroll::-webkit-scrollbar-thumb {
-    border: 1px solid var(--cc-line);
-    background: var(--cc-platinum);
-    box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
-  }
-  .mw-body--scroll::-webkit-scrollbar-button:single-button {
-    display: block;
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--cc-line);
-    background-color: var(--cc-platinum);
-    background-position: center;
-    background-repeat: no-repeat;
-    box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
-  }
-  .mw-body--scroll::-webkit-scrollbar-button:single-button:active { background-color: var(--cc-platinum-lo); }
-  /* Data URIs cannot read custom properties, so the arrows repeat the ink value of --cc-line. */
-  .mw-body--scroll::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 1.5 7.5 6h-7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
-  .mw-body--scroll::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 6.5 7.5 2h-7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
-  .mw-body--scroll::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M1.5 4 6 .5v7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
-  .mw-body--scroll::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M6.5 4 2 .5v7z' fill='%231A1A1A'/%3E%3C/svg%3E"); }
-  .mw-body--scroll::-webkit-scrollbar-corner { background: var(--cc-platinum); }
+  .mw-body--scroll::-webkit-scrollbar { width: 11px; height: 11px; background: transparent; }
+  .mw-body--scroll::-webkit-scrollbar-track,
+  .mw-body--scroll::-webkit-scrollbar-corner { background: transparent; }
+  .mw-body--scroll::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: rgba(0, 0, 0, 0.28) padding-box; }
+  .mw-body--scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.42); }
+  .mw--dark .mw-body--scroll::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.24); }
 }
 @supports not selector(::-webkit-scrollbar) {
-  .mw-body--scroll { scrollbar-color: var(--cc-platinum-lo) var(--cc-platinum); }
+  .mw-body--scroll { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.3) transparent; }
 }
 
-/* ── MacWindow · windowshade ───────────────────────────────────────── */
+/* ── MacWindow · shaded ────────────────────────────────────────────── */
 /* shaded prop: the pane's height animates to 0 and the window shrinks to its title bar. */
 
 .mw.mw--shaded { height: auto !important; min-height: 0 !important; }
 .mw--shaded .mw-pane { flex: none; }
-.mw--shaded .mw-titlebar { height: 22px; border-bottom-width: 0; }
-
-/* ── MacWindow · zoom rects ────────────────────────────────────────── */
-/* Five 1 px ink outlines, fixed to the viewport, each shown for two 56 ms steps from the centre (or origin) out to the window bounds. */
-
-.mw-zoomrect {
-  position: fixed;
-  z-index: 300;
-  border: 1px solid var(--cc-line);
-  opacity: 0;
-  pointer-events: none;
-  animation: mw-zoomrect 112ms steps(1, end) forwards;
-}
-@keyframes mw-zoomrect {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
+.mw--shaded .mw-titlebar { border-bottom-width: 0; }
 
 /* ── MacWindow · utility variant ───────────────────────────────────── */
-/* variant="utility": a floating palette with a thin title bar (the story rail). */
+/* variant="utility": a floating panel with a 22 px title bar and 10 px lights. */
 
-.mw--utility .mw-titlebar { height: 18px; }
-.mw--utility .mw-titlebar::before { top: 4px; height: 9px; }
-.mw--utility .mw-box { width: 9px; height: 9px; }
-.mw--utility .mw-box svg { width: 7px; height: 7px; }
-.mw--utility .mw-title { line-height: 17px; }
-.mw--utility.mw--shaded .mw-titlebar { height: 17px; }
+.mw--utility .mw-titlebar { height: 22px; padding: 0 9px; }
+.mw--utility .mw-lights { gap: 6px; }
+.mw--utility .mw-light { width: 10px; height: 10px; }
+.mw--utility .mw-light svg { width: 7px; height: 7px; }
+.mw--utility .mw-title { font-size: 11px; line-height: 22px; }
 
 /* ── MenuBar ───────────────────────────────────────────────────────── */
-/* The 28 px fixed bar: white, a 1 px ink rule under it, titles in the chrome face, drop-down menus with the coral inverse highlight. */
+/* The 26 px fixed bar on vibrancy: ✦ where the Apple logo sits, 13 px titles, macOS drop-down menus with the coral highlight. */
+/* The blur sits on ::before: a backdrop-filter on the bar itself would make it the containing block of the fixed menus, and the list's overflow clip would then cut them off. */
 
 .cc-menubar {
   position: fixed;
@@ -251,26 +209,36 @@ button.mw-box { cursor: pointer; }
   display: flex;
   align-items: stretch;
   height: var(--cc-topbar);
-  padding: 0 8px;
-  border-bottom: 1px solid var(--cc-line);
-  background: var(--cc-surface);
+  padding: 0 10px;
   color: var(--cc-text);
-  font-family: var(--cc-chrome);
-  font-size: 14px;
+  font-family: var(--cc-sans);
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1;
 }
+.cc-menubar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-bottom: 0.5px solid var(--cc-line);
+  background: var(--cc-vibrancy);
+  -webkit-backdrop-filter: var(--cc-vibrancy-filter);
+  backdrop-filter: var(--cc-vibrancy-filter);
+}
 /* Titles that do not fit are cut off; the menus are fixed-position, so this clip never hides them. */
-.cc-menubar-list { display: flex; align-items: stretch; flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; overflow: hidden; list-style: none; }
+.cc-menubar-list { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; overflow: hidden; list-style: none; }
 .cc-menubar-item,
 .cc-menubar-mark { display: flex; }
-.cc-menubar-mark { align-items: center; padding: 0 10px; }
+.cc-menubar-mark { align-items: center; padding: 0 11px 0 8px; }
 .cc-menubar-title {
   display: flex;
   align-items: center;
+  height: 22px;
   margin: 0;
-  padding: 0 10px;
+  padding: 0 9px;
   border: 0;
-  border-radius: 0;
+  border-radius: 5px;
   background: none;
   color: inherit;
   font: inherit;
@@ -278,24 +246,27 @@ button.mw-box { cursor: pointer; }
   white-space: nowrap;
   cursor: default;
 }
-.cc-menubar-title:hover,
+/* The first named title after the ✦ is the app name, in bold, as on macOS. */
+.cc-menubar-list > li:nth-child(2) > .cc-menubar-title:not(.is-spark) { font-weight: 700; }
+.cc-menubar-title:hover { background: rgba(0, 0, 0, 0.06); }
 .cc-menubar-title.is-open,
-.cc-menubar-title:focus-visible { background: var(--cc-select); color: var(--cc-text); outline: none; }
-.cc-menubar .ic-spark { display: block; color: currentColor; }
+.cc-menubar-title:focus-visible { background: rgba(0, 0, 0, 0.1); outline: none; }
+.cc-menubar .ic-spark { display: block; color: var(--cc-accent); }
 .cc-menubar-spark { display: flex; }
-.cc-menubar-clock { display: flex; align-items: center; flex: none; padding: 0 8px; white-space: nowrap; }
+.cc-menubar-clock { display: flex; align-items: center; flex: none; padding: 0 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .cc-menu {
   position: fixed;
-  top: var(--cc-topbar);
+  top: calc(var(--cc-topbar) + 1px);
   z-index: 101;
-  min-width: 180px;
+  min-width: 220px;
   max-width: calc(100vw - 8px);
   margin: 0;
-  padding: 2px 0;
-  border: 1px solid var(--cc-line);
-  border-radius: var(--cc-radius-window);
-  background: var(--cc-surface);
+  padding: 5px;
+  border-radius: 8px;
+  background: var(--cc-vibrancy);
+  -webkit-backdrop-filter: var(--cc-vibrancy-filter);
+  backdrop-filter: var(--cc-vibrancy-filter);
   box-shadow: var(--cc-shadow-pop);
   list-style: none;
 }
@@ -307,13 +278,14 @@ button.mw-box { cursor: pointer; }
   width: 100%;
   min-height: 22px;
   margin: 0;
-  padding: 2px 16px 2px 14px;
+  padding: 3px 10px;
   border: 0;
-  border-radius: 0;
+  border-radius: 4px;
   background: none;
   color: var(--cc-text);
-  font-family: var(--cc-chrome);
-  font-size: 14px;
+  font-family: var(--cc-sans);
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.2;
   text-align: left;
   text-decoration: none;
@@ -321,15 +293,17 @@ button.mw-box { cursor: pointer; }
   cursor: default;
 }
 .cc-menu-item:hover,
-.cc-menu-item:focus { background: var(--cc-select); color: var(--cc-text); outline: none; }
-.cc-menu-item[aria-disabled="true"] { color: var(--cc-platinum-dk); }
+.cc-menu-item:focus { background: var(--cc-accent); color: #FFFFFF; outline: none; }
+.cc-menu-item[aria-disabled="true"] { color: rgba(0, 0, 0, 0.26); }
 .cc-menu-item[aria-disabled="true"]:hover,
-.cc-menu-item[aria-disabled="true"]:focus { background: none; }
-.cc-menu-key { margin-left: auto; color: var(--cc-text-2); }
-/* Classic dotted separator. */
-.cc-menu-sep { height: 1px; margin: 3px 0; background: repeating-linear-gradient(90deg, var(--cc-platinum-lo) 0 1px, transparent 1px 2px); }
+.cc-menu-item[aria-disabled="true"]:focus { background: none; color: rgba(0, 0, 0, 0.26); }
+.cc-menu-key { margin-left: auto; color: var(--cc-text-3); }
+.cc-menu-item:hover .cc-menu-key,
+.cc-menu-item:focus .cc-menu-key { color: rgba(255, 255, 255, 0.82); }
+.cc-menu-sep { height: 1px; margin: 5px 10px; background: var(--cc-line); }
 
 /* ── PushButton ────────────────────────────────────────────────────── */
+/* A white rounded button with a faint top-to-bottom gradient, a hairline border and a small shadow; the default button fills with the accent. */
 
 .cc-btn {
   display: inline-flex;
@@ -337,113 +311,127 @@ button.mw-box { cursor: pointer; }
   justify-content: center;
   gap: 6px;
   min-height: 24px;
-  padding: 2px 16px;
-  border: 1px solid var(--cc-line);
+  padding: 3px 14px;
+  border: 0.5px solid rgba(0, 0, 0, 0.16);
   border-radius: var(--cc-radius-btn);
-  background: var(--cc-platinum);
-  box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo);
+  background: linear-gradient(to bottom, #FFFFFF, #F6F6F7);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.04);
   color: var(--cc-text);
-  font-family: var(--cc-chrome);
-  font-size: 14px;
+  font-family: var(--cc-sans);
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.2;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
 }
-.cc-btn:active { background: var(--cc-select); box-shadow: inset 1px 1px 0 var(--cc-accent-ink); }
+.cc-btn:active { background: linear-gradient(to bottom, #EDEDEF, #E6E6E9); }
+.cc-btn--default {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: linear-gradient(to bottom, #E08868, var(--cc-accent));
+  box-shadow: 0 0.5px 1px rgba(181, 85, 47, 0.3), 0 1px 3px rgba(217, 119, 87, 0.25), inset 0 0.5px 0 rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+.cc-btn--default:active { background: var(--cc-accent-ink); }
 .cc-btn:disabled,
-.cc-btn[aria-disabled="true"] { color: var(--cc-platinum-dk); cursor: default; }
-.cc-btn:disabled:active { background: var(--cc-platinum); box-shadow: inset 1px 1px 0 var(--cc-platinum-hi), inset -1px -1px 0 var(--cc-platinum-lo); }
-/* The default button's thick outer ring, 1 px clear of the button; the margin keeps neighbours off the ring. */
-.cc-btn--default { margin: 4px; outline: 3px solid var(--cc-line); outline-offset: 1px; }
-.cc-btn:focus-visible { outline: 2px solid var(--cc-accent); outline-offset: 2px; }
-.cc-btn--default:focus-visible { outline: 3px solid var(--cc-accent); outline-offset: 1px; }
+.cc-btn[aria-disabled="true"] { opacity: 0.5; cursor: default; }
+.cc-btn:disabled:active { background: linear-gradient(to bottom, #FFFFFF, #F6F6F7); }
+.cc-btn--default:disabled:active { background: linear-gradient(to bottom, #E08868, var(--cc-accent)); }
+.cc-btn:focus-visible { outline: 3px solid var(--cc-focus); outline-offset: 1px; }
 
 /* ── Checkbox ──────────────────────────────────────────────────────── */
-/* 12 px square, 1 px ink border, an X from corner to corner when checked. */
+/* 14 px box with 4 px corners; checked, it fills with the accent and a white tick draws on. */
 
-.cc-check { position: relative; display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+.cc-check { position: relative; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; vertical-align: middle; }
 /* The real checkbox sits under the drawn box for keyboard and screen reader use. */
-.cc-check-input { position: absolute; top: 0; left: 0; width: 12px; height: 12px; margin: 0; opacity: 0; }
+.cc-check-input { position: absolute; top: 0; left: 0; width: 14px; height: 14px; margin: 0; opacity: 0; }
 .cc-check-box {
   position: relative;
   display: inline-block;
   flex: none;
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--cc-line);
-  background: var(--cc-surface);
+  width: 14px;
+  height: 14px;
+  border: 0.5px solid rgba(0, 0, 0, 0.22);
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #FFFFFF, #F6F6F7);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08);
+  transition: background-color var(--cc-d1) ease;
 }
-.cc-check-x { position: absolute; inset: 0; width: 10px; height: 10px; overflow: visible; }
-.cc-check-x path { fill: none; stroke: var(--cc-line); stroke-width: 1; stroke-dasharray: 15; stroke-dashoffset: 15; }
-/* Checking draws the two strokes in steps; unchecking clears them at once. */
-.cc-check-box.is-checked .cc-check-x path { stroke-dashoffset: 0; transition: stroke-dashoffset 120ms steps(3, end); }
-.cc-check-box.is-checked .cc-check-x path + path { transition-delay: 60ms; }
-.cc-check-input:focus-visible + .cc-check-box { outline: 2px solid var(--cc-accent); outline-offset: 2px; }
-.cc-check.is-disabled { color: var(--cc-platinum-dk); }
-.cc-check.is-disabled .cc-check-box { border-color: var(--cc-platinum-dk); }
+.cc-check-box.is-checked { border-color: rgba(0, 0, 0, 0.1); background: var(--cc-accent); }
+.cc-check-mark { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.cc-check-mark path { fill: none; stroke: #FFFFFF; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 12; stroke-dashoffset: 12; }
+/* Checking draws the tick left to right; unchecking clears it at once. */
+.cc-check-box.is-checked .cc-check-mark path { stroke-dashoffset: 0; transition: stroke-dashoffset 180ms var(--cc-ease); }
+.cc-check-input:focus-visible + .cc-check-box { outline: 3px solid var(--cc-focus); outline-offset: 1px; }
+.cc-check.is-disabled { opacity: 0.5; }
 
 /* ── ProgressBar ───────────────────────────────────────────────────── */
-/* A 1 px ink box that fills with coral; indeterminate shows a barber pole that steps sideways. */
+/* A 6 px rounded track that fills with the accent; indeterminate slides a highlight across. */
 
 .cc-progressbar {
   position: relative;
-  height: 12px;
+  height: 6px;
   overflow: hidden;
-  border: 1px solid var(--cc-line);
-  background: var(--cc-surface);
+  border-radius: var(--cc-radius-pill);
+  background: rgba(0, 0, 0, 0.08);
 }
+/* The fill is full width and slides in from the left, so its rounded right end keeps its shape at every value. */
 .cc-progressbar-fill {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   background: var(--cc-accent);
-  transform-origin: 0 50%;
-  transition: transform var(--cc-d2) linear;
+  transition: transform var(--cc-d2) var(--cc-ease);
 }
 .cc-progressbar-fill.is-live { transition: none; }
-/* 45° stripes repeat every 8 px across, 11.3137 px along the bar, so one period of travel loops seamlessly. */
 .cc-progressbar-pole {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -12px;
-  right: 0;
-  background: repeating-linear-gradient(-45deg, var(--cc-accent) 0 4px, var(--cc-surface) 4px 8px);
-  animation: cc-pole 480ms steps(4, end) infinite;
+  left: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(217, 119, 87, 0) 0%, var(--cc-accent) 50%, rgba(217, 119, 87, 0) 100%);
+  transform: translateX(-100%);
+  animation: cc-pole 1.3s var(--cc-ease) infinite;
 }
 @keyframes cc-pole {
-  to { transform: translateX(11.3137px); }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
 }
 
 /* ── Marquee ───────────────────────────────────────────────────────── */
-/* Marching ants: ink dashes over a light under-stroke, one pixel per 60 ms step. */
+/* A Finder-style drag selection: a translucent coral fill inside a 1 px coral edge. */
 
-.cc-marquee { position: absolute; z-index: 2; opacity: 0; pointer-events: none; }
-.cc-marquee.is-active { opacity: 1; }
-.cc-marquee-svg { position: absolute; inset: 0; overflow: visible; }
-.cc-marquee-base { fill: none; stroke: var(--cc-surface); stroke-width: 1; }
-.cc-marquee-ants { fill: none; stroke: var(--cc-line); stroke-width: 1; stroke-dasharray: 4 4; }
-.cc-marquee.is-active .cc-marquee-ants { animation: cc-ants 480ms steps(8, end) infinite; }
-@keyframes cc-ants {
-  to { stroke-dashoffset: -8; }
+.cc-marquee {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid rgba(217, 119, 87, 0.7);
+  border-radius: 3px;
+  background: var(--cc-accent-soft);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--cc-d1) ease;
 }
+.cc-marquee.is-active { opacity: 1; }
 
 /* ── Keycap ────────────────────────────────────────────────────────── */
+/* A macOS key: white, 4 px corners, a hairline edge and a 1 px shadow under it. */
 
 .cc-keycap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border: 1px solid var(--cc-line);
-  border-bottom-width: 2px;
-  border-radius: calc(var(--cc-radius-btn) / 2);
-  background: var(--cc-platinum);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 0.5px solid rgba(0, 0, 0, 0.18);
+  border-radius: 4px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
   color: var(--cc-text);
-  font-family: var(--cc-mono);
-  font-size: 11px;
+  font-family: var(--cc-sans);
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -571,22 +559,37 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 }
 
 /* ── TodoList ──────────────────────────────────────────────────────── */
+/* Reminders-style rows: an empty ring for later items, a filled coral circle with a white tick for done items, the coral spinner glyph for the current one. */
 
 .todo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--cc-mono);
+  font-family: var(--cc-sans);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
 }
-.todo-item { display: flex; align-items: flex-start; gap: 10px; color: var(--cc-text-2); transition: color var(--cc-d2) ease; }
-.todo-item.is-current { color: var(--cc-text); }
+.todo-item { display: flex; align-items: flex-start; gap: 9px; color: var(--cc-text); transition: color var(--cc-d2) ease; }
+.todo-item.is-current { font-weight: 600; }
 .todo-item.is-done { color: var(--cc-text-3); }
-.todo-box { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 1.5em; }
+.todo-box { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 1.45em; }
+.todo-circle {
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  border-radius: 50%;
+  background: var(--cc-surface);
+  transition: background-color var(--cc-d1) ease, border-color var(--cc-d1) ease;
+}
+.todo-circle.is-done { border-color: var(--cc-accent); background: var(--cc-accent); }
+.todo-circle svg { position: absolute; inset: -1px; width: 14px; height: 14px; overflow: visible; }
+.todo-circle path { fill: none; stroke: #FFFFFF; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 10; stroke-dashoffset: 10; }
+.todo-circle.is-done path { stroke-dashoffset: 0; transition: stroke-dashoffset 200ms var(--cc-ease) 60ms; }
 .todo-label { min-width: 0; }
 .todo-link {
   margin: 0;
@@ -599,20 +602,20 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
   text-decoration: none;
   cursor: pointer;
 }
-.todo-link:hover { color: var(--cc-text); }
+.todo-link:hover { color: var(--cc-accent-ink); }
 /* The strike line is a 1 px background that grows from 0% to 100% width, so it draws left to right and follows wrapped lines in order. */
 .todo-text {
-  background: linear-gradient(currentColor, currentColor) no-repeat 0 60% / 0% 1px;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 0% 1px;
   transition: background-size var(--cc-d3) var(--cc-ease);
 }
 .todo-item.is-done .todo-text { background-size: 100% 1px; }
 
 /* ── Diff ──────────────────────────────────────────────────────────── */
-/* A card inside a window: 1 px ink border, platinum header strip, tinted add and remove lines. */
+/* A rounded card inside a window: hairline edge, light grey header strip, tinted add and remove lines. */
 
 .diff {
   overflow: hidden;
-  border: 1px solid var(--cc-line);
+  border: 0.5px solid var(--cc-line);
   border-radius: var(--cc-radius-card);
   background: var(--cc-surface);
   box-shadow: var(--cc-shadow-pop);
@@ -621,10 +624,10 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
   line-height: 1.65;
 }
 .diff-head {
-  padding: 4px 12px;
-  border-bottom: 1px solid var(--cc-line);
-  background: var(--cc-platinum);
-  color: var(--cc-text);
+  padding: 5px 12px;
+  border-bottom: 0.5px solid var(--cc-line);
+  background: var(--cc-surface-2);
+  color: var(--cc-text-2);
   font-size: 12px;
 }
 .diff-plus { color: var(--cc-green); }
@@ -649,11 +652,11 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 .ch-title {
   max-width: 24ch;
   margin-top: 12px;
-  font-family: var(--cc-serif);
+  font-family: var(--cc-display);
   font-size: clamp(32px, 4.6vw, 54px);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.08;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   color: var(--cc-text);
   text-wrap: balance;
 }
@@ -661,8 +664,8 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 .ch-lead {
   max-width: 62ch;
   margin-top: 18px;
-  font-family: var(--cc-serif);
-  font-size: 20px;
+  font-family: var(--cc-sans);
+  font-size: 19px;
   line-height: 1.5;
   color: var(--cc-text-2);
   text-wrap: pretty;
@@ -672,9 +675,9 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 }
 
 /* ── ScrollScene ───────────────────────────────────────────────────── */
-/* The section sets the scroll length and shows the desktop checker; the stage stays pinned under the menu bar while the section scrolls past. */
+/* The section sets the scroll length and shows the wallpaper; the stage stays pinned under the menu bar while the section scrolls past. */
 
-.cc-scene { position: relative; height: var(--cc-scene-h, 260vh); background: var(--cc-desk); scroll-margin-top: var(--cc-topbar); }
+.cc-scene { position: relative; height: var(--cc-scene-h, 260vh); background: var(--cc-wallpaper); scroll-margin-top: var(--cc-topbar); }
 .cc-scene-stage {
   position: sticky;
   top: var(--cc-topbar);
@@ -706,7 +709,7 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 }
 
 /* ── Token ─────────────────────────────────────────────────────────── */
-/* The followed chat: a coral pill with a 1 px ink border and a 2 px hard shadow; the dot blinks in steps while active and turns green when done. */
+/* The followed chat: a coral pill with a soft coral shadow and white text; the dot blinks while active and turns green when done. */
 
 .cc-token {
   position: relative;
@@ -714,25 +717,24 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
   align-items: center;
   gap: 7px;
   max-width: 100%;
-  padding: 2px 11px 2px 9px;
-  border: 1px solid var(--cc-line);
+  padding: 3px 12px 3px 10px;
   border-radius: var(--cc-radius-pill);
   background: var(--cc-accent);
-  box-shadow: var(--cc-shadow-pop);
-  color: var(--cc-text);
-  font-family: var(--cc-mono);
+  box-shadow: 0 0 0 0.5px rgba(181, 85, 47, 0.4), 0 1px 2px rgba(181, 85, 47, 0.25), 0 8px 20px -6px rgba(217, 119, 87, 0.6);
+  color: #FFFFFF;
+  font-family: var(--cc-sans);
   font-size: 12px;
-  font-weight: 500;
-  line-height: 1.6;
+  font-weight: 600;
+  line-height: 1.5;
   white-space: nowrap;
   vertical-align: middle;
 }
-.cc-token--sm { gap: 6px; padding: 1px 9px 1px 7px; font-size: 11px; }
-.cc-token--lg { gap: 9px; padding: 5px 15px 5px 12px; font-size: 14px; }
-.cc-token-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--cc-text); }
+.cc-token--sm { gap: 6px; padding: 2px 10px 2px 8px; font-size: 11px; }
+.cc-token--lg { gap: 9px; padding: 6px 16px 6px 13px; font-size: 14px; }
+.cc-token-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); }
 .cc-token--lg .cc-token-dot { width: 7px; height: 7px; }
 .cc-token.is-active .cc-token-dot { animation: cc-blink 1s linear infinite; }
-.cc-token.is-done .cc-token-dot { background: var(--cc-green); box-shadow: 0 0 0 1px var(--cc-surface); }
+.cc-token.is-done .cc-token-dot { background: var(--cc-green); box-shadow: 0 0 0 1.5px #FFFFFF; }
 /* The label slot clips while its width eases to the incoming label. */
 .cc-token-label { position: relative; display: inline-flex; min-width: 0; overflow: hidden; }
 .cc-token-track { position: relative; display: inline-flex; white-space: nowrap; }
@@ -745,21 +747,21 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
 .cc-stat-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .cc-stat-value {
   display: inline-block;
-  font-family: var(--cc-serif);
+  font-family: var(--cc-display);
   font-size: clamp(40px, 5.4vw, 64px);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   color: var(--cc-text);
   font-variant-numeric: lining-nums tabular-nums;
 }
-.cc-stat-unit { font-family: var(--cc-serif); font-size: 20px; color: var(--cc-text-2); }
+.cc-stat-unit { font-family: var(--cc-sans); font-size: 19px; font-weight: 500; color: var(--cc-text-2); }
 .cc-stat-none {
   display: inline-flex;
   align-items: center;
   height: clamp(40px, 5.4vw, 64px);
   padding: 0 16px;
-  border: 1px dashed var(--cc-line);
+  border: 1px dashed rgba(0, 0, 0, 0.2);
   border-radius: var(--cc-radius-card);
   font-family: var(--cc-mono);
   font-size: 12px;
@@ -775,11 +777,9 @@ button.tc-row:hover .tc-chev { color: var(--cc-text); }
   .cc-spinner-strip,
   .tc.is-running .tc-dot,
   .cc-token.is-active .cc-token-dot,
-  .st-caret,
-  .cc-marquee.is-active .cc-marquee-ants,
-  .cc-progressbar-pole { animation: none; }
+  .st-caret { animation: none; }
+  /* The indeterminate highlight stands still in the middle of the track. */
+  .cc-progressbar-pole { animation: none; transform: translateX(75%); }
   .cc-scene { height: auto; }
   .cc-scene-stage { position: relative; top: auto; height: auto; overflow: visible; }
-  .mw--pending { visibility: visible; }
-  .mw-zoomrect { display: none; }
 }

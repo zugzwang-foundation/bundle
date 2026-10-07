@@ -7,7 +7,7 @@ import { motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotio
 const EASE = [0.16, 1, 0.3, 1];
 
 /**
- * A tall section with a sticky stage that fills the viewport under the menu bar while the reader scrolls through it; the section shows the --cc-desk checker.
+ * A tall section with a sticky stage that fills the viewport under the menu bar while the reader scrolls through it; the section shows the --cc-wallpaper gradient.
  * Input: id, height (scroll length, default '260vh'), mobileHeight (scroll length under 640 px, default '150vh'), className (section), stageClassName (stage), children.
  * children is a render function (progress) => node, where progress is a motion value from 0 (section top at the viewport top) to 1 (section bottom at the viewport bottom).
  * Pass progress to components that call useTransform or useStep; do not call hooks inside the render function itself.
@@ -113,7 +113,7 @@ export function DrawPath({ d, progress, from = 0, to = 1, className = '', stroke
 
 /**
  * A fixed 2 px coral line under the menu bar that fills left to right with page scroll.
- * Hidden at 1200 px and wider, where the story rail shows progress. (The classic boxed progress bar is ProgressBar.jsx.)
+ * Hidden at 1200 px and wider, where the story rail shows progress. (The rounded progress bar is ProgressBar.jsx.)
  */
 export function ScrollProgress() {
   const { scrollYProgress } = useScroll();

@@ -1,9 +1,8 @@
 import { useId, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Checkbox } from './Checkbox';
 import { Spinner } from './Spinner';
 
-/* Claude Code transcript motifs inside classic Mac windows: tool call rows, the todo list, diffs and keycaps. */
+/* Claude Code transcript motifs inside macOS windows: tool call rows, the todo list, diffs and keycaps. */
 
 const EASE = [0.16, 1, 0.3, 1];
 const STATUS_TEXT = { running: 'running', done: 'done', error: 'failed' };
@@ -128,7 +127,15 @@ function TodoItem({ item, isCurrent, onSelect }) {
   return (
     <li className={`todo-item ${state}`}>
       <span className="todo-box" aria-hidden="true">
-        {isCurrent ? <Spinner size={13} className="todo-spin" /> : <Checkbox checked={item.done} />}
+        {isCurrent ? (
+          <Spinner size={13} className="todo-spin" />
+        ) : (
+          <span className={`todo-circle${item.done ? ' is-done' : ''}`}>
+            <svg viewBox="0 0 14 14">
+              <path d="M4.2 7.2l2 2 3.7-4.2" />
+            </svg>
+          </span>
+        )}
       </span>
       {label}
     </li>
@@ -136,9 +143,9 @@ function TodoItem({ item, isCurrent, onSelect }) {
 }
 
 /**
- * The Claude Code todo list drawn with System 7 checkboxes: empty boxes for later items, an X and a strike-through for done items, the coral spinner glyph for the current one.
+ * The Claude Code todo list in the macOS Reminders style: an empty ring for later items, a filled coral circle with a white tick and a strike-through for done items, the coral spinner glyph for the current one.
  * Input: items [{ id, label, done, href? }], current (id of the item in progress), onSelect(id, event) (optional; makes labels buttons, or runs on link click when items have href), className.
- * When an item turns done its X draws on and the strike line draws left to right.
+ * When an item turns done its circle fills, the tick draws on and the strike line draws left to right.
  */
 export function TodoList({ items, current, onSelect, className = '' }) {
   return (
@@ -228,7 +235,7 @@ export function Diff({ header, lines, start = 1 }) {
   );
 }
 
-/** A small platinum keycap for keyboard hints: 1 px border, 2 px bottom edge. Input: children (the key name, e.g. "⌘K"), className. */
+/** A macOS key for keyboard hints: white, 4 px corners, a hairline edge and a 1 px shadow under it. Input: children (the key name, e.g. "⌘K"), className. */
 export function Keycap({ children, className = '' }) {
   return <kbd className={`cc-keycap ${className}`.trim()}>{children}</kbd>;
 }

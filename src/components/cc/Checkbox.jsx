@@ -1,16 +1,15 @@
-/* A System 7 checkbox: a 12 px square with a 1 px ink border and an X when checked. */
+/* A macOS checkbox: a 14 px box with 4 px corners that fills with the accent and shows a white tick when checked. */
 
 /**
  * Input: checked, label (optional text or node), onChange(checked, event) (optional; makes it a real, focusable checkbox), disabled, className.
  * Without onChange it is a read-only indicator: with a label it is exposed as a read-only checkbox, without one it is decorative.
- * When it turns checked the two strokes of the X draw on in steps.
+ * When it turns checked the tick draws on left to right.
  */
 export function Checkbox({ checked = false, label, onChange, disabled = false, className = '' }) {
   const box = (
     <span className={`cc-check-box${checked ? ' is-checked' : ''}`} aria-hidden="true">
-      <svg className="cc-check-x" viewBox="0 0 10 10" shapeRendering="crispEdges">
-        <path d="M0 0L10 10" />
-        <path d="M10 0L0 10" />
+      <svg className="cc-check-mark" viewBox="0 0 14 14">
+        <path d="M3.6 7.3l2.4 2.4 4.4-5" />
       </svg>
     </span>
   );

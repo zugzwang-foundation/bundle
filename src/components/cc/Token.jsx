@@ -6,8 +6,8 @@ const LAYOUT_SPRING = { type: 'spring', stiffness: 380, damping: 32 };
 const INSTANT = { duration: 0 };
 
 /**
- * The pill that follows one of Meera's chats through the page: coral fill, 1 px ink border, 2 px hard shadow, mono label.
- * Input: label (the chat's current name), active (the dot blinks in steps), done (the dot turns green), size ('sm' 11 px, 'md' 12 px, 'lg' 14 px label), layoutId (lets the pill fly between positions in a scene), className.
+ * The pill that follows one of Meera's chats through the page: coral fill, white label, a soft coral shadow.
+ * Input: label (the chat's current name), active (the dot blinks), done (the dot turns green), size ('sm' 11 px, 'md' 12 px, 'lg' 14 px label), layoutId (lets the pill fly between positions in a scene), className.
  * When label changes, the old label fades up and out, the new one fades in, and the pill width eases to fit.
  * With reduced motion the label swaps and the pill moves without animation.
  */

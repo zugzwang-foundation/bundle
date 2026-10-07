@@ -1,0 +1,165 @@
+/* The Claude window on the landing (ShowcaseApp): scenes of Meera's chat index in the dark claude.ai look. */
+/* Prefix sc-. The cl- rules in product.css load after this file, so every override here is scoped under .sc-app to win on specificity. */
+
+.sc-app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  font-family: var(--font-sans);
+  container: sc / inline-size;
+}
+
+/* ── Sidebar mirror ── */
+.sc-side {
+  width: 232px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--cl-side);
+  border-right: 1px solid var(--cl-hair);
+}
+.sc-app .sc-side .cl-brand { padding: 14px 16px 8px; font-size: 15.5px; }
+.sc-app .sc-side .cl-nav { padding: 2px 8px 8px; }
+.sc-app .sc-side .cl-nav-item { padding: 6px 10px; font-size: 13px; }
+.sc-side-scroll { flex: 1; min-height: 0; overflow: hidden; padding: 0 8px 16px; }
+.sc-app .sc-side .cl-side-section-head svg.ic-spark { color: var(--cl-coral); flex: none; }
+.sc-grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@container sc (max-width: 600px) {
+  .sc-side { display: none; }
+}
+
+/* ── Main column: the page never scrolls by hand; the scene scrolls it to the part that changes ── */
+.sc-main { flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.sc-app .sc-page { position: relative; padding: 26px 26px 48px; }
+.sc-app .cl-page-title { margin-bottom: 14px; }
+
+/* Static controls drawn with the product's classes on spans. */
+.sc-app .cl-chip,
+.sc-app .cl-new-btn,
+.sc-app .cl-try,
+.sc-app .cl-btn-ghost,
+.sc-app .cl-btn-solid { display: inline-block; cursor: default; }
+.sc-app .cl-switch { display: inline-block; cursor: default; }
+.sc-door { color: var(--cl-coral); text-decoration: underline; text-underline-offset: 2px; }
+
+/* The tooltip is always in the DOM; it shows on hover, and on its own in the toggle scene. */
+.sc-app .cl-toggle-wrap.is-tip .cl-tooltip { opacity: 1; transform: none; transition-delay: 0s; }
+
+.sc-switch-wrap { position: relative; display: inline-flex; border-radius: 99px; }
+.sc-switch-wrap.is-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 99px;
+  border: 2px solid var(--cl-coral);
+  animation: sc-pulse 1.4s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes sc-pulse {
+  0% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* ── Bundles ── */
+.sc-app .cl-bundle-chevron { cursor: default; }
+.sc-part { position: relative; display: inline-flex; align-items: center; }
+.sc-app .cl-bundle-head svg.ic-spark { color: var(--cl-coral); }
+
+.sc-mark {
+  position: absolute;
+  top: -11px;
+  right: -10px;
+  z-index: 3;
+  width: 17px;
+  height: 17px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cl-coral);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--cl-bg);
+  pointer-events: none;
+}
+.sc-mark.is-left { right: auto; left: -12px; }
+.sc-mark.is-row { top: 50%; right: auto; left: -8px; margin-top: -8.5px; }
+
+/* J-3: the name as an inline field, first selected, then typed. */
+.sc-app .sc-rename { display: inline-flex; align-items: center; min-height: 25px; width: 200px; }
+.sc-rename-text { white-space: pre; }
+.sc-rename.is-selected .sc-rename-text { background: rgba(217, 119, 87, 0.42); border-radius: 2px; }
+.sc-caret { width: 1.5px; height: 15px; margin-left: 1px; background: var(--cl-text); animation: sc-blink 1s steps(1) infinite; }
+@keyframes sc-blink { 50% { opacity: 0; } }
+
+.sc-app .cl-bundle-name.sc-flash { border-radius: 5px; animation: sc-flash 1.8s ease-out both; }
+@keyframes sc-flash {
+  0% { background: var(--cl-coral-soft); box-shadow: 0 0 0 4px var(--cl-coral-soft); }
+  100% { background: transparent; box-shadow: 0 0 0 4px transparent; }
+}
+
+/* §10: the Health name is the neutral domain word, marked as the subject of the scene. */
+.sc-app .sc-bundle.is-sensitive .cl-bundle-name {
+  padding: 1px 7px;
+  margin: -1px -7px;
+  border-radius: 6px;
+  background: var(--cl-coral-soft);
+  box-shadow: inset 0 0 0 1.5px var(--cl-coral);
+  color: var(--cl-text);
+}
+
+/* ── Rows ── */
+.sc-app .cl-row { cursor: default; }
+.sc-app .cl-row.is-outline { box-shadow: inset 0 0 0 1.5px var(--cl-coral); color: var(--cl-text); }
+.sc-app .cl-row.is-join { background: var(--cl-coral-soft); box-shadow: inset 0 0 0 1px rgba(217, 119, 87, 0.5); color: var(--cl-text); }
+
+/* ── Menu, toast and dialog live inside the window, not over the page ── */
+.sc-app .cl-menu.sc-menu { position: absolute; right: 18px; left: auto; z-index: 20; transform-origin: top right; }
+.sc-app .cl-menu-item { cursor: default; }
+.sc-app .cl-menu-item.sc-hot { background: rgba(255, 255, 255, 0.08); }
+.sc-app .cl-menu-item.is-new.sc-hot { background: rgba(217, 119, 87, 0.3); }
+.sc-sub { color: var(--cl-faint); }
+
+.sc-app .cl-toast.sc-toast { position: absolute; bottom: 18px; z-index: 40; }
+.sc-undo { color: var(--cl-coral); font-size: 13px; font-weight: 620; }
+
+.sc-app .cl-overlay.sc-overlay { position: absolute; z-index: 50; padding: 16px; }
+.sc-app .sc-dialog-text strong { display: block; margin-bottom: 8px; font-size: 15.5px; font-weight: 640; color: var(--cl-text); }
+.sc-app .cl-btn-solid.sc-default { box-shadow: 0 0 0 2px #21201e, 0 0 0 4px var(--cl-coral); }
+
+/* ── Compact (phones): no sidebar, smaller type, tighter rows ── */
+.sc-app.is-compact { font-size: 12.5px; }
+.sc-app.is-compact .sc-page { padding: 14px 12px 28px; }
+.sc-app.is-compact .cl-page-title { font-size: 17px; margin-bottom: 10px; }
+.sc-app.is-compact .sc-opt { display: none; }
+.sc-app.is-compact .cl-chip { padding: 4px 10px; font-size: 11.5px; }
+.sc-app.is-compact .cl-toggle-label { font-size: 11.5px; }
+.sc-app.is-compact .cl-tooltip { width: 220px; font-size: 11.5px; }
+.sc-app.is-compact .cl-row { gap: 8px; padding: 5px 8px; }
+.sc-app.is-compact .cl-row-title { font-size: 12.5px; }
+.sc-app.is-compact .cl-row-date { font-size: 10.5px; }
+.sc-app.is-compact .cl-bundle-head { padding: 6px 8px; }
+.sc-app.is-compact .cl-bundle-name { font-size: 12.5px; }
+.sc-app.is-compact .cl-bundle-rows { padding-left: 10px; }
+.sc-app.is-compact .cl-note,
+.sc-app.is-compact .cl-statecard { font-size: 11.5px; padding: 8px 10px; }
+.sc-app.is-compact .cl-memory-note { font-size: 11.5px; justify-content: flex-start; }
+.sc-app.is-compact .cl-memory-note .sc-door { font-size: 11.5px; }
+.sc-app.is-compact .cl-toast.sc-toast { bottom: 12px; padding: 9px 12px; font-size: 12px; }
+.sc-app.is-compact .sc-rename { width: 150px; }
+.sc-app.is-compact .cl-dialog { padding: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-switch-wrap.is-pulse::after { animation: none; opacity: 0.8; }
+  .sc-caret { animation: none; }
+  .sc-app .cl-bundle-name.sc-flash { animation: none; background: var(--cl-coral-soft); }
+}

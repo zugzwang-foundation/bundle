@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Spark } from '../Icons';
 
-/* The classic Mac OS menu bar: fixed at the top, ✦ at the left, menu titles with drop-down menus, a clock slot at the right. */
+/* The macOS menu bar: fixed at the top on vibrancy, ✦ where the Apple logo sits, menu titles with drop-down menus, a clock slot at the right. */
 
 const enabledIndexes = (list) => list.map((it, i) => (it.divider || it.disabled ? -1 : i)).filter((i) => i >= 0);
 
@@ -34,7 +34,7 @@ function Action({ item, actionRef, className, tabIndex, onActivate, onKeyDown, o
  * - clock: node shown at the right end (the story date).
  * - className.
  * Keyboard: Left and Right move between titles, Enter, Space or Down opens a menu, Up and Down move in it, Escape closes it, Tab leaves.
- * Selected items take the coral inverse highlight.
+ * The highlighted menu item takes the coral accent with white text.
  */
 export function MenuBar({ items, clock, className = '' }) {
   const [open, setOpen] = useState(-1); // index of the open menu, -1 when none is open

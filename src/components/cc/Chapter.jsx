@@ -1,7 +1,7 @@
 import { Reveal, StreamText } from './motion';
 
 /**
- * A landing chapter: a section with a header (mono label "num · spec", serif title that streams in word by word, one-paragraph lead) and the chapter content in a 1080 px column.
+ * A landing chapter: a section with a header (mono label "num · spec", a bold display title that streams in word by word, one-paragraph lead) and the chapter content in a 1080 px column.
  * Input: id (section id, also the scroll target), num ("01"), spec ("§2"; omitted from the label when absent), title (string), lead, children, className, band (alternate --cc-bg-2 background).
  * Entry order: label, then title 170 ms later, then lead 170 ms after that; each rises 12 px over 330 ms.
  */
